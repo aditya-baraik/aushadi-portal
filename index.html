@@ -1,403 +1,1388 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="hi" id="htmlRoot">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>किसान पंजीकरण पोर्टल | Aushadi Yog</title>
+    <title>किसान पंजीकरण पोर्टल | Aushadhiyog</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <style>
+        :root { --brand: #1b3a1a; --cream: #ede5d2; }
+        body { font-family: 'Inter', 'Noto Sans Devanagari', sans-serif; line-height: 1.6; }
+
+        /* Progress Steps */
+        .step-indicator { display:flex; flex-direction:column; align-items:center; position:relative; flex:1; }
+        .step-circle { width:40px; height:40px; border-radius:50%; background:#e5e7eb; color:#6b7280; display:flex; align-items:center; justify-content:center; font-weight:600; transition:all .3s; z-index:2; }
+        .step-indicator.active .step-circle { background:var(--brand); color:#fff; box-shadow:0 0 0 4px rgba(27,58,26,.2); }
+        .step-indicator.completed .step-circle { background:#2d6a2c; color:#fff; }
+        .step-label { margin-top:8px; font-size:.75rem; text-align:center; color:#6b7280; max-width:100px; }
+        .step-indicator.active .step-label { color:var(--brand); font-weight:600; }
+        .progress-line { height:2px; background:#e5e7eb; flex:1; margin:0 8px; margin-top:-20px; transition:all .3s; }
+        .progress-line.active { background:var(--brand); }
+
+        /* Form */
+        .form-group { margin-bottom:1.5rem; }
+        .form-label { display:block; font-weight:600; color:#374151; margin-bottom:.5rem; font-size:.875rem; }
+        .form-input { width:100%; padding:.75rem; border:2px solid #e5e7eb; border-radius:.5rem; font-size:.875rem; transition:all .2s; background:#fff; }
+        .form-input:focus { outline:none; border-color:var(--brand); box-shadow:0 0 0 3px rgba(27,58,26,.1); }
+        .form-input:invalid:not(:placeholder-shown) { border-color:#ef4444; }
+        .form-step { display:none; }
+        .form-step.active { display:block; animation:fadeIn .3s ease-in; }
+        @keyframes fadeIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+
+        /* Upload */
+        .upload-area { border:2px dashed #d1d5db; border-radius:.5rem; padding:2rem; text-align:center; cursor:pointer; transition:all .3s; background:#f9fafb; }
+        .upload-area:hover { border-color:var(--brand); background:#f0fdf4; }
+        .upload-area.uploaded { border-color:var(--brand); background:#f0fdf4; }
+
+        /* Buttons */
+        .btn-primary { background:var(--brand); color:#fff; padding:.75rem 2rem; border:none; border-radius:.5rem; font-weight:600; cursor:pointer; transition:all .3s; font-size:.875rem; }
+        .btn-primary:hover { background:#0f2310; transform:translateY(-1px); box-shadow:0 4px 12px rgba(27,58,26,.3); }
+        .btn-secondary { background:#fff; color:var(--brand); padding:.75rem 2rem; border:2px solid var(--brand); border-radius:.5rem; font-weight:600; cursor:pointer; transition:all .3s; font-size:.875rem; }
+        .btn-secondary:hover { background:#f0fdf4; }
+        .btn-submit { background:linear-gradient(135deg,var(--brand) 0%,#0f2310 100%); color:#fff; padding:.875rem 2.5rem; border:none; border-radius:.5rem; font-weight:700; cursor:pointer; transition:all .3s; font-size:1rem; box-shadow:0 4px 14px rgba(27,58,26,.4); }
+        .btn-submit:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(27,58,26,.5); }
+        .btn-submit:disabled { background:#9ca3af; cursor:not-allowed; transform:none; box-shadow:none; }
+
+        /* Crop */
+        .crop-entry { position:relative; border:1px solid #e5e7eb; }
+        .remove-crop { position:absolute; top:.5rem; right:.5rem; background:#ef4444; color:#fff; border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; font-size:1.25rem; line-height:1; transition:all .2s; }
+        .remove-crop:hover { background:#dc2626; transform:rotate(90deg); }
+
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .animate-spin { animation:spin 1s linear infinite; }
+        *:focus-visible { outline:2px solid var(--brand); outline-offset:2px; }
+        html { scroll-behavior:smooth; }
+        ::selection { background:var(--brand); color:#fff; }
+
+        @media(max-width:768px){
+            .step-label{font-size:.65rem;max-width:60px;}
+            .step-circle{width:32px;height:32px;font-size:.875rem;}
+            .progress-line{display:none;}
+            .form-input{font-size:16px;}
+        }
+
+        /* Language Modal */
+        #langModal { position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:9999; display:flex; align-items:center; justify-content:center; }
+        .lang-btn { border:2px solid var(--brand); border-radius:.75rem; padding:1.5rem 2.5rem; font-size:1.2rem; font-weight:700; cursor:pointer; transition:all .3s; background:#fff; color:var(--brand); }
+        .lang-btn:hover { background:var(--brand); color:#fff; transform:translateY(-2px); box-shadow:0 6px 16px rgba(27,58,26,.3); }
+
+        /* Print PDF button in form area */
+        .btn-download { background:var(--cream); color:var(--brand); padding:.6rem 1.4rem; border:2px solid var(--brand); border-radius:.5rem; font-weight:600; cursor:pointer; font-size:.85rem; transition:all .3s; }
+        .btn-download:hover { background:var(--brand); color:#fff; }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-green-50 to-emerald-50">
-    
-    <!-- Header -->
-    <header class="bg-white shadow-sm border-b-4 border-green-600">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h1 class="text-2xl font-bold text-green-800">औषधि योग</h1>
-                        <p class="text-sm text-gray-600">किसान पंजीकरण प्रणाली</p>
-                    </div>
+<body class="bg-gradient-to-br from-amber-50 to-stone-100">
+
+<!-- Language Selection Modal -->
+<div id="langModal">
+    <div style="background:#fff; border-radius:1.5rem; padding:3rem 2rem; text-align:center; max-width:420px; width:90%; box-shadow:0 25px 60px rgba(0,0,0,.3);">
+        <div style="width:64px;height:64px;background:var(--brand);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
+            <svg style="width:36px;height:36px;color:#fff;fill:none;stroke:currentColor;" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+        </div>
+        <h2 style="font-size:1.5rem;font-weight:700;color:var(--brand);margin-bottom:.5rem;">Aushadhiyog</h2>
+        <p style="color:#6b7280;margin-bottom:2rem;font-size:.95rem;">भाषा चुनें / Select Language</p>
+        <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+            <button class="lang-btn" onclick="setLanguage('hi')">हिंदी</button>
+            <button class="lang-btn" onclick="setLanguage('en')">English</button>
+        </div>
+    </div>
+</div>
+
+<!-- Header -->
+<header class="bg-white shadow-sm" style="border-bottom:4px solid var(--brand);">
+    <div class="container mx-auto px-4 py-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background:var(--brand);">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                    </svg>
                 </div>
-                <div class="hidden md:flex items-center space-x-2 text-green-700">
+                <div>
+                    <h1 class="text-2xl font-bold" style="color:var(--brand);" data-hi="औषधि योग" data-en="Aushadhiyog">औषधि योग</h1>
+                    <p class="text-sm text-gray-500" data-hi="किसान पंजीकरण प्रणाली" data-en="Farmer Registration System">किसान पंजीकरण प्रणाली</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="hidden md:flex items-center space-x-2" style="color:var(--brand);">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                     </svg>
-                    <span class="font-medium">हेल्पलाइन: 7250915077</span>
+                    <span class="font-medium" data-hi="हेल्पलाइन: 7250915077" data-en="Helpline: 7250915077">हेल्पलाइन: 7250915077</span>
                 </div>
+                <button onclick="toggleLanguage()" style="background:var(--cream);border:2px solid var(--brand);color:var(--brand);padding:.3rem .8rem;border-radius:.5rem;font-weight:600;cursor:pointer;font-size:.8rem;" id="langToggleBtn">EN</button>
             </div>
         </div>
-    </header>
+    </div>
+</header>
 
-    <!-- Main Container -->
-    <div class="container mx-auto px-4 py-8 max-w-4xl">
-        
-        <!-- Progress Bar -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div class="flex items-center justify-between mb-4">
-                <div class="step-indicator active" data-step="1">
-                    <div class="step-circle">1</div>
-                    <p class="step-label">व्यक्तिगत जानकारी</p>
-                </div>
-                <div class="progress-line"></div>
-                <div class="step-indicator" data-step="2">
-                    <div class="step-circle">2</div>
-                    <p class="step-label">पता विवरण</p>
-                </div>
-                <div class="progress-line"></div>
-                <div class="step-indicator" data-step="3">
-                    <div class="step-circle">3</div>
-                    <p class="step-label">भूमि विवरण</p>
-                </div>
-                <div class="progress-line"></div>
-                <div class="step-indicator" data-step="4">
-                    <div class="step-circle">4</div>
-                    <p class="step-label">फसल / अनुभव</p>
-                </div>
-                <div class="progress-line"></div>
-                <div class="step-indicator" data-step="5">
-                    <div class="step-circle">5</div>
-                    <p class="step-label">फोटो व जमा</p>
-                </div>
+<!-- Main Container -->
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+
+    <!-- Progress Bar -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <div class="step-indicator active" data-step="1">
+                <div class="step-circle">1</div>
+                <p class="step-label" data-hi="व्यक्तिगत जानकारी" data-en="Personal Info">व्यक्तिगत जानकारी</p>
             </div>
-        </div>
-
-        <!-- Form Card -->
-        <div class="bg-white rounded-lg shadow-lg p-8">
-            <form id="registrationForm">
-                
-                <!-- Step 1: Personal Information -->
-                <div class="form-step active" data-step="1">
-                    <h2 class="text-2xl font-bold text-green-800 mb-6 border-b-2 border-green-200 pb-3">
-                        🆔 किसान का व्यक्तिगत विवरण
-                    </h2>
-                    
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div class="form-group md:col-span-2">
-                            <label class="form-label">पूरा नाम *</label>
-                            <input type="text" name="fullName" required class="form-input" placeholder="जैसे: राम कुमार शर्मा">
-                        </div>
-                        
-                        <div class="form-group md:col-span-2">
-                            <label class="form-label">पिता / पति का नाम *</label>
-                            <input type="text" name="fatherName" required class="form-input" placeholder="पिता या पति का नाम">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">लिंग *</label>
-                            <select name="gender" required class="form-input">
-                                <option value="">चुनें</option>
-                                <option value="पुरुष">पुरुष</option>
-                                <option value="महिला">महिला</option>
-                                <option value="अन्य">अन्य</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">जन्म तिथि *</label>
-                            <input type="date" name="dob" required class="form-input">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">आयु *</label>
-                            <input type="number" name="age" required min="18" max="100" class="form-input" placeholder="वर्षों में" readonly>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">मोबाइल नंबर *</label>
-                            <input type="tel" name="phone" required pattern="[0-9]{10}" class="form-input" placeholder="10 अंकों का नंबर">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">आधार संख्या *</label>
-                            <input type="text" name="aadharNumber" required pattern="[0-9]{12}" maxlength="12" class="form-input" placeholder="12 अंकों का आधार नंबर">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">बैंक खाता संख्या *</label>
-                            <input type="text" name="bankAccount" required class="form-input" placeholder="बैंक खाता नंबर">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">IFSC कोड *</label>
-                            <input type="text" name="ifscCode" required class="form-input" placeholder="जैसे: SBIN0001234" style="text-transform:uppercase">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 2: Address Details -->
-                <div class="form-step" data-step="2">
-                    <h2 class="text-2xl font-bold text-green-800 mb-6 border-b-2 border-green-200 pb-3">
-                        📍 पता विवरण
-                    </h2>
-                    
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div class="form-group">
-                            <label class="form-label">ग्राम *</label>
-                            <input type="text" name="village" required class="form-input" placeholder="गाँव का नाम">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">पंचायत *</label>
-                            <input type="text" name="panchayat" required class="form-input" placeholder="पंचायत का नाम">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">प्रखंड *</label>
-                            <input type="text" name="block" required class="form-input" placeholder="प्रखंड/ब्लॉक का नाम">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">जिला *</label>
-                            <input type="text" name="district" required class="form-input" placeholder="जिले का नाम">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">राज्य *</label>
-                            <input type="text" name="state" required class="form-input" placeholder="राज्य का नाम">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 3: Land Details -->
-                <div class="form-step" data-step="3">
-                    <h2 class="text-2xl font-bold text-green-800 mb-6 border-b-2 border-green-200 pb-3">
-                        🌾 भूमि विवरण
-                    </h2>
-                    
-                    <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
-                        <p class="text-sm text-green-800">अपनी भूमि का विवरण नीचे भरें। सिंचित और असिंचित भूमि अलग-अलग भरें।</p>
-                    </div>
-
-                    <div class="space-y-4 mb-6">
-                        <h3 class="font-semibold text-gray-700">सिंचित भूमि (Irrigated)</h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="form-group">
-                                <label class="form-label">क्षेत्र (एकड़) *</label>
-                                <input type="number" name="irrigatedArea" required step="0.01" min="0" class="form-input" placeholder="एकड़ में">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">स्वामित्व *</label>
-                                <select name="irrigatedOwnership" required class="form-input">
-                                    <option value="">चुनें</option>
-                                    <option value="स्वयं">स्वयं</option>
-                                    <option value="लीज">लीज</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <h3 class="font-semibold text-gray-700 mt-4">असिंचित भूमि (Unirrigated)</h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="form-group">
-                                <label class="form-label">क्षेत्र (एकड़)</label>
-                                <input type="number" name="unirrigatedArea" step="0.01" min="0" class="form-input" placeholder="एकड़ में (0 अगर नहीं है)">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">स्वामित्व</label>
-                                <select name="unirrigatedOwnership" class="form-input">
-                                    <option value="">चुनें</option>
-                                    <option value="स्वयं">स्वयं</option>
-                                    <option value="लीज">लीज</option>
-                                    <option value="लागू नहीं">लागू नहीं</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- SHG / FPO -->
-                    <div class="grid md:grid-cols-2 gap-6 mt-4">
-                        <div class="form-group">
-                            <label class="form-label">SHG / FPO सदस्य *</label>
-                            <select name="shgMember" required class="form-input">
-                                <option value="">चुनें</option>
-                                <option value="हाँ">हाँ</option>
-                                <option value="नहीं">नहीं</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">SHG / FPO का नाम (यदि हाँ)</label>
-                            <input type="text" name="shgName" class="form-input" placeholder="संगठन का नाम">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 4: Crop Details & Experience -->
-                <div class="form-step" data-step="4">
-                    <h2 class="text-2xl font-bold text-green-800 mb-6 border-b-2 border-green-200 pb-3">
-                        🌿 प्रस्तावित फसल विवरण
-                    </h2>
-                    
-                    <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
-                        <p class="text-sm text-green-800"><strong>नोट:</strong> जो औषधीय फसलें उगाना चाहते हैं, उनका विवरण दें। + बटन से और जोड़ें।</p>
-                    </div>
-
-                    <div id="cropsContainer">
-                        <div class="crop-entry bg-gray-50 rounded-lg p-4 mb-4">
-                            <div class="grid md:grid-cols-3 gap-4">
-                                <div class="form-group">
-                                    <label class="form-label">फसल का नाम *</label>
-                                    <input type="text" name="cropName[]" required class="form-input" placeholder="जैसे: अश्वगंधा">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">बुवाई माह *</label>
-                                    <input type="text" name="sowingMonth[]" required class="form-input" placeholder="जैसे: जून-जुलाई">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">कटाई माह *</label>
-                                    <input type="text" name="harvestMonth[]" required class="form-input" placeholder="जैसे: फरवरी-मार्च">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button type="button" id="addCropBtn" class="bg-green-100 text-green-700 px-4 py-2 rounded-lg hover:bg-green-200 transition font-medium mb-8">
-                        + फसल जोड़ें
-                    </button>
-
-                    <!-- Previous Experience -->
-                    <div class="border-t-2 border-gray-200 pt-6 mt-4">
-                        <h3 class="text-lg font-semibold text-green-800 mb-4">📋 पूर्व अनुभव</h3>
-                        <div class="form-group">
-                            <label class="form-label">क्या आपने पहले औषधीय फसल उगाई है? *</label>
-                            <select name="previousMedicinal" required class="form-input">
-                                <option value="">चुनें</option>
-                                <option value="हाँ">हाँ</option>
-                                <option value="नहीं">नहीं</option>
-                            </select>
-                        </div>
-                        <div class="form-group" id="prevExpDetails" style="display:none">
-                            <label class="form-label">पूर्व अनुभव का विवरण</label>
-                            <textarea name="prevExpDescription" rows="3" class="form-input" placeholder="पहले उगाई हुई फसलों का विवरण दें"></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 5: Photo Upload & Declaration -->
-                <div class="form-step" data-step="5">
-                    <h2 class="text-2xl font-bold text-green-800 mb-6 border-b-2 border-green-200 pb-3">
-                        📸 फोटो अपलोड करें
-                    </h2>
-
-                    <!-- Photo Upload -->
-                    <div class="form-group mb-8">
-                        <label class="form-label">पासपोर्ट साइज फोटो * (अधिकतम 500KB)</label>
-                        <div class="upload-area" id="photoUploadArea">
-                            <svg class="w-12 h-12 text-gray-400 mb-2 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                            </svg>
-                            <p class="text-gray-600 font-medium">क्लिक करें और फोटो चुनें</p>
-                            <p class="text-gray-400 text-sm mt-1">JPG, PNG | अधिकतम 500KB</p>
-                        </div>
-                        <input type="file" id="photoInput" accept="image/jpeg,image/png,image/jpg" style="display:none">
-                        <div id="photoPreviewBox" style="display:none" class="mt-4 text-center">
-                            <img id="photoPreview" class="w-32 h-40 object-cover border-2 border-green-400 rounded mx-auto" alt="Preview">
-                            <p class="text-green-600 font-medium mt-2">✅ फोटो चुनी गई</p>
-                            <button type="button" onclick="clearPhoto()" class="text-red-500 text-sm mt-1 underline">हटाएं</button>
-                        </div>
-                    </div>
-
-                    <!-- आवश्यक दस्तावेज -->
-                    <div class="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4 mb-6">
-                        <h3 class="font-semibold text-yellow-800 mb-2">📎 आवश्यक दस्तावेज (संलग्न करें):</h3>
-                        <ul class="text-sm text-yellow-700 space-y-1">
-                            <li>☐ आधार कार्ड</li>
-                            <li>☐ बैंक पासबुक</li>
-                            <li>☐ भूमि दस्तावेज / लीज एग्रीमेंट</li>
-                        </ul>
-                        <p class="text-xs text-yellow-600 mt-2">नोट: ये दस्तावेज़ फोन पर WhatsApp/Telegram के माध्यम से भेजें: <strong>7250915077</strong></p>
-                    </div>
-
-                    <!-- Declaration -->
-                    <div class="bg-green-50 border-2 border-green-200 rounded-lg p-6 mb-6">
-                        <h3 class="font-semibold text-green-800 mb-3">📜 उत्पादन एवं विपणन सहमति / घोषणा</h3>
-                        <ul class="text-sm text-gray-700 space-y-2 mb-4">
-                            <li>✔ कंपनी के निर्देशानुसार खेती करूंगा/करूंगी</li>
-                            <li>✔ गुणवत्ता मानकों का पालन करूंगा/करूंगी</li>
-                            <li>✔ उत्पाद को प्राथमिकता से कंपनी को बेचूंगा/बेचूंगी</li>
-                        </ul>
-                        <p class="text-sm text-gray-600">मैं यह घोषित करता/करती हूँ कि दी गई सभी जानकारी सत्य है। यदि कोई जानकारी गलत पाई जाती है, तो पंजीकरण निरस्त किया जा सकता है।</p>
-                        <div class="mt-4">
-                            <label class="flex items-start space-x-3">
-                                <input type="checkbox" id="declarationCheck" required class="mt-1 w-4 h-4 text-green-600">
-                                <span class="text-sm text-gray-700 font-medium">मैं उपरोक्त शर्तों से सहमत हूँ और घोषणा करता/करती हूँ कि सभी जानकारी सत्य है। *</span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Navigation Buttons -->
-                <div class="flex justify-between mt-8 pt-6 border-t-2 border-gray-200">
-                    <button type="button" id="prevBtn" class="btn-secondary" style="display: none;">
-                        ← पिछला
-                    </button>
-                    <div></div>
-                    <button type="button" id="nextBtn" class="btn-primary">
-                        अगला →
-                    </button>
-                    <button type="submit" id="submitBtn" class="btn-submit" style="display: none;">
-                        <span id="submitText">📤 फॉर्म जमा करें</span>
-                        <span id="submitLoader" style="display: none;">
-                            <svg class="animate-spin h-5 w-5 inline" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            PDF बन रही है...
-                        </span>
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Help Section -->
-        <div class="mt-6 bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-green-800 mb-3">सहायता चाहिए?</h3>
-            <div class="grid md:grid-cols-2 gap-4 text-sm text-gray-700">
-                <div class="flex items-center space-x-2">
-                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                    </svg>
-                    <span>7250915077</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                    </svg>
-                    <span>aushadhiyog@gmail.com</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                    </svg>
-                    <span>NH-23, Palkoat Road, Gumla</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <span>सोमवार - शनिवार: 9 AM - 6 PM</span>
-                </div>
+            <div class="progress-line"></div>
+            <div class="step-indicator" data-step="2">
+                <div class="step-circle">2</div>
+                <p class="step-label" data-hi="पता विवरण" data-en="Address">पता विवरण</p>
+            </div>
+            <div class="progress-line"></div>
+            <div class="step-indicator" data-step="3">
+                <div class="step-circle">3</div>
+                <p class="step-label" data-hi="भूमि विवरण" data-en="Land Details">भूमि विवरण</p>
+            </div>
+            <div class="progress-line"></div>
+            <div class="step-indicator" data-step="4">
+                <div class="step-circle">4</div>
+                <p class="step-label" data-hi="फसल / अनुभव" data-en="Crop / Exp">फसल / अनुभव</p>
+            </div>
+            <div class="progress-line"></div>
+            <div class="step-indicator" data-step="5">
+                <div class="step-circle">5</div>
+                <p class="step-label" data-hi="फोटो व जमा" data-en="Photo & Submit">फोटो व जमा</p>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-green-800 text-white mt-12 py-6">
-        <div class="container mx-auto px-4 text-center">
-            <p>&copy; 2026 Aushadhiyog Pvt. Ltd. | सभी अधिकार सुरक्षित</p>
-            <p class="text-sm text-green-200 mt-2">भारतीय किसानों के लिए बनाया गया 🌱</p>
-        </div>
-    </footer>
+    <!-- Form Card -->
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <form id="registrationForm">
 
-    <!-- jsPDF library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="js/app.js"></script>
+            <!-- Step 1: Personal Information -->
+            <div class="form-step active" data-step="1">
+                <h2 class="text-2xl font-bold mb-6 border-b-2 pb-3" style="color:var(--brand);border-color:#1b3a1a30;"><div style="display:flex; align-items:flex-end; gap:10px;"><svg xmlns="http://www.w3.org/2000/svg" height="40px" viewBox="0 -960 960 960" width="40px" fill="#000000" style="display:block;"><path d="M319.33-246.67h321.34v-66.66H319.33v66.66Zm0-166.66h321.34V-480H319.33v66.67ZM226.67-80q-27 0-46.84-19.83Q160-119.67 160-146.67v-666.66q0-27 19.83-46.84Q199.67-880 226.67-880H574l226 226v507.33q0 27-19.83 46.84Q760.33-80 733.33-80H226.67Zm314-542.67v-190.66h-314v666.66h506.66v-476H540.67Zm-314-190.66v190.66-190.66 666.66-666.66Z"/></svg><span style="line-height:1;" data-hi="किसान का व्यक्तिगत विवरण" data-en="Farmer's Personal Details">किसान का व्यक्तिगत विवरण</span></div>                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="form-group md:col-span-2">
+                        <label class="form-label" data-hi="पूरा नाम *" data-en="Full Name *">पूरा नाम *</label>
+                        <input type="text" name="fullName" required class="form-input" data-phi="जैसे: राम कुमार" data-pen="e.g. Ram Kumar Sharma" placeholder="जैसे: राम कुमार">
+                    </div>
+                    <div class="form-group md:col-span-2">
+                        <label class="form-label" data-hi="पिता / पति का नाम *" data-en="Father / Husband Name *">पिता / पति का नाम *</label>
+                        <input type="text" name="fatherName" required class="form-input" data-phi="पिता या पति का नाम" data-pen="Father or husband name" placeholder="पिता या पति का नाम">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-hi="लिंग *" data-en="Gender *">लिंग *</label>
+                        <select name="gender" required class="form-input">
+                            <option value="" data-hi="चुनें" data-en="Select">चुनें</option>
+                            <option value="पुरुष" data-hi="पुरुष" data-en="Male">पुरुष</option>
+                            <option value="महिला" data-hi="महिला" data-en="Female">महिला</option>
+                            <option value="अन्य" data-hi="अन्य" data-en="Other">अन्य</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-hi="जन्म तिथि *" data-en="Date of Birth *">जन्म तिथि *</label>
+                        <input type="date" name="dob" required class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-hi="आयु *" data-en="Age *">आयु *</label>
+                        <input type="number" name="age" required min="18" max="100" class="form-input" data-phi="वर्षों में" data-pen="In years" placeholder="वर्षों में" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-hi="मोबाइल नंबर *" data-en="Mobile Number *">मोबाइल नंबर *</label>
+                        <input type="tel" name="phone" required pattern="[0-9]{10}" class="form-input" data-phi="10 अंकों का नंबर" data-pen="10 digit number" placeholder="10 अंकों का नंबर">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-hi="आधार संख्या *" data-en="Aadhaar Number *">आधार संख्या *</label>
+                        <input type="text" name="aadharNumber" required pattern="[0-9]{12}" maxlength="12" class="form-input" data-phi="12 अंकों का आधार नंबर" data-pen="12 digit Aadhaar number" placeholder="12 अंकों का आधार नंबर">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-hi="बैंक खाता संख्या *" data-en="Bank Account Number *">बैंक खाता संख्या *</label>
+                        <input type="text" name="bankAccount" required class="form-input" data-phi="बैंक खाता नंबर" data-pen="Bank account number" placeholder="बैंक खाता नंबर">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">IFSC कोड *</label>
+                        <input type="text" name="ifscCode" required class="form-input" placeholder="SBIN0001234" style="text-transform:uppercase">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Address Details -->
+            <div class="form-step" data-step="2">
+                <h2 class="text-2xl font-bold mb-6 border-b-2 pb-3" style="color:var(--brand);border-color:#1b3a1a30;">
+                    📍 <span data-hi="पता विवरण" data-en="Address Details">पता विवरण</span>
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Order: राज्य → जिला → प्रखंड → ग्राम / पंचायत -->
+                    <div class="form-group">
+                        <label class="form-label" data-hi="राज्य *" data-en="State *">राज्य *</label>
+                        <select name="state" id="stateSelect" required class="form-input" onchange="onStateChange()">
+                            <option value="" data-hi="राज्य चुनें" data-en="Select State">राज्य चुनें</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-hi="जिला *" data-en="District *">जिला *</label>
+                        <select name="district" id="districtSelect" required class="form-input" onchange="onDistrictChange()" disabled>
+                            <option value="" data-hi="पहले राज्य चुनें" data-en="Select state first">पहले राज्य चुनें</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-hi="प्रखंड *" data-en="Block *">प्रखंड *</label>
+                        <select name="block" id="blockSelect" required class="form-input" onchange="onBlockChange()" disabled>
+                            <option value="" data-hi="पहले जिला चुनें" data-en="Select district first">पहले जिला चुनें</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-hi="ग्राम *" data-en="Village *">ग्राम *</label>
+                        <select name="village" id="villageSelect" required class="form-input" disabled>
+                            <option value="" data-hi="पहले प्रखंड चुनें" data-en="Select block first">पहले प्रखंड चुनें</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-hi="पंचायत *" data-en="Panchayat *">पंचायत *</label>
+                        <select name="panchayat" id="panchayatSelect" required class="form-input" disabled>
+                            <option value="" data-hi="पहले प्रखंड चुनें" data-en="Select block first">पहले प्रखंड चुनें</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Land Details -->
+            <div class="form-step" data-step="3">
+                <h2 class="text-2xl font-bold mb-6 border-b-2 pb-3" style="color:var(--brand);border-color:#1b3a1a30;">
+                    🌾 <span data-hi="भूमि विवरण" data-en="Land Details">भूमि विवरण</span>
+                </h2>
+                <div class="border-l-4 p-4 mb-6 rounded-r-lg" style="background:#f5f0e8;border-color:var(--brand);">
+                    <p class="text-sm" style="color:var(--brand);" data-hi="अपनी भूमि का विवरण नीचे भरें। सिंचित और असिंचित भूमि अलग-अलग भरें।" data-en="Fill land details below. Fill irrigated and unirrigated land separately.">अपनी भूमि का विवरण नीचे भरें। सिंचित और असिंचित भूमि अलग-अलग भरें।</p>
+                </div>
+                <div class="space-y-4 mb-6">
+                    <h3 class="font-semibold text-gray-700" data-hi="सिंचित भूमि (Irrigated)" data-en="Irrigated Land">सिंचित भूमि (Irrigated)</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label" data-hi="क्षेत्र (एकड़) *" data-en="Area (Acres) *">क्षेत्र (एकड़) *</label>
+                            <input type="number" name="irrigatedArea" required step="0.01" min="0" class="form-input" data-phi="एकड़ में" data-pen="In acres" placeholder="एकड़ में">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" data-hi="स्वामित्व *" data-en="Ownership *">स्वामित्व *</label>
+                            <select name="irrigatedOwnership" required class="form-input">
+                                <option value="" data-hi="चुनें" data-en="Select">चुनें</option>
+                                <option value="स्वयं" data-hi="स्वयं" data-en="Own">स्वयं</option>
+                                <option value="लीज" data-hi="लीज" data-en="Lease">लीज</option>
+                            </select>
+                        </div>
+                    </div>
+                    <h3 class="font-semibold text-gray-700 mt-4" data-hi="असिंचित भूमि (Unirrigated)" data-en="Unirrigated Land">असिंचित भूमि (Unirrigated)</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label" data-hi="क्षेत्र (एकड़)" data-en="Area (Acres)">क्षेत्र (एकड़)</label>
+                            <input type="number" name="unirrigatedArea" step="0.01" min="0" class="form-input" data-phi="एकड़ में (0 अगर नहीं है)" data-pen="In acres (0 if none)" placeholder="एकड़ में (0 अगर नहीं है)">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" data-hi="स्वामित्व" data-en="Ownership">स्वामित्व</label>
+                            <select name="unirrigatedOwnership" class="form-input">
+                                <option value="" data-hi="चुनें" data-en="Select">चुनें</option>
+                                <option value="स्वयं" data-hi="स्वयं" data-en="Own">स्वयं</option>
+                                <option value="लीज" data-hi="लीज" data-en="Lease">लीज</option>
+                                <option value="लागू नहीं" data-hi="लागू नहीं" data-en="Not Applicable">लागू नहीं</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6 mt-4">
+                    <div class="form-group">
+                        <label class="form-label">SHG / FPO <span data-hi="सदस्य *" data-en="Member *">सदस्य *</span></label>
+                        <select name="shgMember" required class="form-input">
+                            <option value="" data-hi="चुनें" data-en="Select">चुनें</option>
+                            <option value="हाँ" data-hi="हाँ" data-en="Yes">हाँ</option>
+                            <option value="नहीं" data-hi="नहीं" data-en="No">नहीं</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">SHG / FPO <span data-hi="का नाम (यदि हाँ)" data-en="Name (if Yes)">का नाम (यदि हाँ)</span></label>
+                        <input type="text" name="shgName" class="form-input" data-phi="संगठन का नाम" data-pen="Organisation name" placeholder="संगठन का नाम">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Crop Details -->
+            <div class="form-step" data-step="4">
+                <h2 class="text-2xl font-bold mb-6 border-b-2 pb-3" style="color:var(--brand);border-color:#1b3a1a30;">
+                    🌿 <span data-hi="प्रस्तावित फसल विवरण" data-en="Proposed Crop Details">प्रस्तावित फसल विवरण</span>
+                </h2>
+                <div class="border-l-4 p-4 mb-6 rounded-r-lg" style="background:#f5f0e8;border-color:var(--brand);">
+                    <p class="text-sm" style="color:var(--brand);" data-hi="नोट: जो औषधीय फसलें उगाना चाहते हैं, उनका विवरण दें। + बटन से और जोड़ें।" data-en="Note: Add details of medicinal crops you want to grow. Use + button to add more.">नोट: जो औषधीय फसलें उगाना चाहते हैं, उनका विवरण दें। + बटन से और जोड़ें।</p>
+                </div>
+                <div id="cropsContainer">
+                    <div class="crop-entry bg-gray-50 rounded-lg p-4 mb-4">
+                        <div class="grid md:grid-cols-3 gap-4">
+                            <div class="form-group">
+                                <label class="form-label" data-hi="फसल का नाम *" data-en="Crop Name *">फसल का नाम *</label>
+                                <input type="text" name="cropName[]" required class="form-input" data-phi="जैसे: अश्वगंधा" data-pen="e.g. Ashwagandha" placeholder="जैसे: अश्वगंधा">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" data-hi="बुवाई माह *" data-en="Sowing Month *">बुवाई माह *</label>
+                                <input type="text" name="sowingMonth[]" required class="form-input" data-phi="जैसे: जून-जुलाई" data-pen="e.g. June-July" placeholder="जैसे: जून-जुलाई">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" data-hi="कटाई माह *" data-en="Harvest Month *">कटाई माह *</label>
+                                <input type="text" name="harvestMonth[]" required class="form-input" data-phi="जैसे: फरवरी-मार्च" data-pen="e.g. Feb-March" placeholder="जैसे: फरवरी-मार्च">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" id="addCropBtn" class="px-4 py-2 rounded-lg transition font-medium mb-8" style="background:#e8f0e8;color:var(--brand);" data-hi="+ फसल जोड़ें" data-en="+ Add Crop">
+                    + फसल जोड़ें
+                </button>
+                <div class="border-t-2 border-gray-200 pt-6 mt-4">
+                    <h3 class="text-lg font-semibold mb-4" style="color:var(--brand);">📋 <span data-hi="पूर्व अनुभव" data-en="Previous Experience">पूर्व अनुभव</span></h3>
+                    <div class="form-group">
+                        <label class="form-label" data-hi="क्या आपने पहले औषधीय फसल उगाई है? *" data-en="Have you grown medicinal crops before? *">क्या आपने पहले औषधीय फसल उगाई है? *</label>
+                        <select name="previousMedicinal" required class="form-input">
+                            <option value="" data-hi="चुनें" data-en="Select">चुनें</option>
+                            <option value="हाँ" data-hi="हाँ" data-en="Yes">हाँ</option>
+                            <option value="नहीं" data-hi="नहीं" data-en="No">नहीं</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="prevExpDetails" style="display:none">
+                        <label class="form-label" data-hi="पूर्व अनुभव का विवरण" data-en="Details of Previous Experience">पूर्व अनुभव का विवरण</label>
+                        <textarea name="prevExpDescription" rows="3" class="form-input" data-phi="पहले उगाई हुई फसलों का विवरण दें" data-pen="Describe previously grown crops" placeholder="पहले उगाई हुई फसलों का विवरण दें"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5: Photo & Documents Upload -->
+            <div class="form-step" data-step="5">
+                <h2 class="text-2xl font-bold mb-6 border-b-2 pb-3" style="color:var(--brand);border-color:#1b3a1a30;">
+                    📸 <span data-hi="फोटो व दस्तावेज़ अपलोड करें" data-en="Upload Photo & Documents">फोटो व दस्तावेज़ अपलोड करें</span>
+                </h2>
+
+                <!-- Passport Photo -->
+                <div class="form-group mb-6">
+                    <label class="form-label" data-hi="पासपोर्ट साइज फोटो * (अधिकतम 500KB)" data-en="Passport Size Photo * (Max 500KB)">पासपोर्ट साइज फोटो * (अधिकतम 500KB)</label>
+                    <div class="upload-area" id="photoUploadArea" onclick="document.getElementById('photoInput').click()">
+                        <svg class="w-10 h-10 text-gray-400 mb-2 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        <p class="text-gray-600 font-medium" data-hi="क्लिक करें और फोटो चुनें" data-en="Click to choose photo">क्लिक करें और फोटो चुनें</p>
+                        <p class="text-gray-400 text-sm mt-1">JPG, PNG | Max 500KB</p>
+                    </div>
+                    <input type="file" id="photoInput" accept="image/jpeg,image/png,image/jpg" style="display:none">
+                    <div id="photoPreviewBox" style="display:none" class="mt-4 text-center">
+                        <img id="photoPreview" class="w-32 h-40 object-cover rounded mx-auto" style="border:2px solid var(--brand);" alt="Preview">
+                        <p class="font-medium mt-2" style="color:var(--brand);">✅ <span data-hi="फोटो चुनी गई" data-en="Photo selected">फोटो चुनी गई</span></p>
+                        <button type="button" onclick="clearDoc('photo')" class="text-red-500 text-sm mt-1 underline" data-hi="हटाएं" data-en="Remove">हटाएं</button>
+                    </div>
+                </div>
+
+                <!-- Aadhaar Card Upload -->
+                <div class="form-group mb-6">
+                    <label class="form-label" data-hi="आधार कार्ड * (अधिकतम 500KB)" data-en="Aadhaar Card * (Max 500KB)">आधार कार्ड * (अधिकतम 500KB)</label>
+                    <div class="upload-area" id="aadhaarUploadArea" onclick="document.getElementById('aadhaarInput').click()">
+                        <svg class="w-10 h-10 text-gray-400 mb-2 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2"/></svg>
+                        <p class="text-gray-600 font-medium" data-hi="आधार कार्ड की फोटो चुनें" data-en="Choose Aadhaar card photo">आधार कार्ड की फोटो चुनें</p>
+                        <p class="text-gray-400 text-sm mt-1">JPG, PNG | Max 500KB</p>
+                    </div>
+                    <input type="file" id="aadhaarInput" accept="image/jpeg,image/png,image/jpg" style="display:none">
+                    <div id="aadhaarPreviewBox" style="display:none" class="mt-3 p-3 rounded-lg flex items-center gap-3" style="background:#f5f0e8;">
+                        <img id="aadhaarPreview" class="w-16 h-12 object-cover rounded" style="border:1px solid var(--brand);" alt="">
+                        <p class="font-medium text-sm" style="color:var(--brand);">✅ <span data-hi="आधार कार्ड अपलोड हुआ" data-en="Aadhaar uploaded">आधार कार्ड अपलोड हुआ</span></p>
+                        <button type="button" onclick="clearDoc('aadhaar')" class="text-red-500 text-sm underline ml-auto" data-hi="हटाएं" data-en="Remove">हटाएं</button>
+                    </div>
+                </div>
+
+                <!-- Bank Passbook Upload -->
+                <div class="form-group mb-6">
+                    <label class="form-label" data-hi="बैंक पासबुक * (अधिकतम 500KB)" data-en="Bank Passbook * (Max 500KB)">बैंक पासबुक * (अधिकतम 500KB)</label>
+                    <div class="upload-area" id="passbookUploadArea" onclick="document.getElementById('passbookInput').click()">
+                        <svg class="w-10 h-10 text-gray-400 mb-2 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                        <p class="text-gray-600 font-medium" data-hi="बैंक पासबुक की फोटो चुनें" data-en="Choose bank passbook photo">बैंक पासबुक की फोटो चुनें</p>
+                        <p class="text-gray-400 text-sm mt-1">JPG, PNG | Max 500KB</p>
+                    </div>
+                    <input type="file" id="passbookInput" accept="image/jpeg,image/png,image/jpg" style="display:none">
+                    <div id="passbookPreviewBox" style="display:none" class="mt-3 p-3 rounded-lg flex items-center gap-3" style="background:#f5f0e8;">
+                        <img id="passbookPreview" class="w-16 h-12 object-cover rounded" style="border:1px solid var(--brand);" alt="">
+                        <p class="font-medium text-sm" style="color:var(--brand);">✅ <span data-hi="बैंक पासबुक अपलोड हुई" data-en="Passbook uploaded">बैंक पासबुक अपलोड हुई</span></p>
+                        <button type="button" onclick="clearDoc('passbook')" class="text-red-500 text-sm underline ml-auto" data-hi="हटाएं" data-en="Remove">हटाएं</button>
+                    </div>
+                </div>
+
+                <!-- Land Document Upload -->
+                <div class="form-group mb-6">
+                    <label class="form-label" data-hi="भूमि दस्तावेज / लीज एग्रीमेंट * (अधिकतम 500KB)" data-en="Land Document / Lease Agreement * (Max 500KB)">भूमि दस्तावेज / लीज एग्रीमेंट * (अधिकतम 500KB)</label>
+                    <div class="upload-area" id="landDocUploadArea" onclick="document.getElementById('landDocInput').click()">
+                        <svg class="w-10 h-10 text-gray-400 mb-2 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        <p class="text-gray-600 font-medium" data-hi="भूमि दस्तावेज की फोटो चुनें" data-en="Choose land document photo">भूमि दस्तावेज की फोटो चुनें</p>
+                        <p class="text-gray-400 text-sm mt-1">JPG, PNG | Max 500KB</p>
+                    </div>
+                    <input type="file" id="landDocInput" accept="image/jpeg,image/png,image/jpg" style="display:none">
+                    <div id="landDocPreviewBox" style="display:none" class="mt-3 p-3 rounded-lg flex items-center gap-3" style="background:#f5f0e8;">
+                        <img id="landDocPreview" class="w-16 h-12 object-cover rounded" style="border:1px solid var(--brand);" alt="">
+                        <p class="font-medium text-sm" style="color:var(--brand);">✅ <span data-hi="भूमि दस्तावेज अपलोड हुआ" data-en="Land document uploaded">भूमि दस्तावेज अपलोड हुआ</span></p>
+                        <button type="button" onclick="clearDoc('landDoc')" class="text-red-500 text-sm underline ml-auto" data-hi="हटाएं" data-en="Remove">हटाएं</button>
+                    </div>
+                </div>
+
+                <!-- WhatsApp note -->
+                <div class="rounded-lg p-4 mb-6 flex flex-wrap items-center gap-3" style="background:#fff8e1;border:2px solid #f59e0b;">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium" style="color:#92400e;" data-hi="नोट: किसी भी जानकारी के लिए आप हमसे WhatsApp पर संपर्क कर सकते हैं।" data-en="Note: For any information you can contact us on WhatsApp.">नोट: किसी भी जानकारी के लिए आप हमसे WhatsApp पर संपर्क कर सकते हैं।</p>
+                    </div>
+                    <a href="https://wa.me/917250915077" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm text-white" style="background:#25D366;white-space:nowrap;">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                       Click Me- 7250915077
+                    </a>
+                </div>
+
+                <!-- Declaration -->
+                <div class="border-2 rounded-lg p-6 mb-6" style="background:#f5f0e8;border-color:#1b3a1a30;">
+                    <h3 class="font-semibold mb-3" style="color:var(--brand);">📜 <span data-hi="उत्पादन एवं विपणन सहमति / घोषणा" data-en="Production & Marketing Consent / Declaration">उत्पादन एवं विपणन सहमति / घोषणा</span></h3>
+                    <ul class="text-sm text-gray-700 space-y-2 mb-4">
+                        <li data-hi="✔ कंपनी के निर्देशानुसार खेती करूंगा/करूंगी" data-en="✔ I will farm as per company guidelines">✔ कंपनी के निर्देशानुसार खेती करूंगा/करूंगी</li>
+                        <li data-hi="✔ गुणवत्ता मानकों का पालन करूंगा/करूंगी" data-en="✔ I will follow quality standards">✔ गुणवत्ता मानकों का पालन करूंगा/करूंगी</li>
+                        <li data-hi="✔ उत्पाद को प्राथमिकता से कंपनी को बेचूंगा/बेचूंगी" data-en="✔ I will prioritize selling produce to the company">✔ उत्पाद को प्राथमिकता से कंपनी को बेचूंगा/बेचूंगी</li>
+                    </ul>
+                    <p class="text-sm text-gray-600" data-hi="मैं यह घोषित करता/करती हूँ कि दी गई सभी जानकारी सत्य है।" data-en="I declare that all information provided is true.">मैं यह घोषित करता/करती हूँ कि दी गई सभी जानकारी सत्य है।</p>
+                    <div class="mt-4">
+                        <label class="flex items-start space-x-3">
+                            <input type="checkbox" id="declarationCheck" required class="mt-1 w-4 h-4">
+                            <span class="text-sm text-gray-700 font-medium" data-hi="मैं उपरोक्त शर्तों से सहमत हूँ और घोषणा करता/करती हूँ कि सभी जानकारी सत्य है। *" data-en="I agree to the above terms and declare all information is true. *">मैं उपरोक्त शर्तों से सहमत हूँ और घोषणा करता/करती हूँ कि सभी जानकारी सत्य है। *</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="flex justify-between mt-8 pt-6 border-t-2 border-gray-200">
+                <button type="button" id="prevBtn" class="btn-secondary" style="display:none;" data-hi="← पिछला" data-en="← Previous">← पिछला</button>
+                <div></div>
+                <div class="flex gap-3 items-center">
+                    <button type="button" id="downloadPdfBtn" class="btn-download" style="display:none;" onclick="downloadPDFPreview()" data-hi="📥 PDF डाउनलोड" data-en="📥 Download PDF">📥 PDF डाउनलोड</button>
+                    <button type="button" id="nextBtn" class="btn-primary" data-hi="अगला →" data-en="Next →">अगला →</button>
+                    <button type="submit" id="submitBtn" class="btn-submit" style="display:none;">
+                        <span id="submitText" data-hi="📤 फॉर्म जमा करें" data-en="📤 Submit Form">📤 फॉर्म जमा करें</span>
+                        <span id="submitLoader" style="display:none;">
+                            <svg class="animate-spin h-5 w-5 inline" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span data-hi="PDF बन रही है..." data-en="Generating PDF...">PDF बन रही है...</span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Help Section -->
+    <div class="mt-6 rounded-lg shadow-md p-6" style="background:var(--cream);">
+        <h3 class="text-lg font-semibold mb-3" style="color:var(--brand);" data-hi="सहायता चाहिए?" data-en="Need Help?">सहायता चाहिए?</h3>
+        <div class="grid md:grid-cols-2 gap-4 text-sm text-gray-700">
+            <div class="flex items-center space-x-2">
+                <svg class="w-5 h-5" style="color:var(--brand);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                <span>7250915077</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <svg class="w-5 h-5" style="color:var(--brand);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <span>aushadhiyog@gmail.com</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <svg class="w-5 h-5" style="color:var(--brand);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+                <span>NH-23, Palkoat Road, Gumla</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <svg class="w-5 h-5" style="color:var(--brand);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span data-hi="सोमवार - शनिवार: 9 AM - 6 PM" data-en="Monday - Saturday: 9 AM - 6 PM">सोमवार - शनिवार: 9 AM - 6 PM</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="text-white mt-12 py-8" style="background:var(--brand);">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-4">
+            <p class="font-semibold text-lg" data-hi="भारतीय किसानों के लिए बनाया गया 🌱" data-en="Built for Indian Farmers 🌱">भारतीय किसानों के लिए बनाया गया 🌱</p>
+            <p class="mt-2 text-base" style="color:#a8d5a2;">झारखंड से, आयुर्वेद के लिए</p>
+        </div>
+        <hr style="border-color:rgba(255,255,255,0.2);margin:1rem 0;">
+        <div class="flex flex-col md:flex-row justify-between items-center text-sm" style="color:#c5e0c4;">
+            <p>&copy; 2025 Aushadhiyog Platform Pvt. Ltd. </p> <p>From Jharkhand's soil to your pharmacy shelf.</p>
+            <p class="mt-2 md:mt-0">Made in Jharkhand, India 🌿</p>
+        </div>
+    </div>
+</footer>
+
+<!-- jsPDF library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// =============================================
+// LANGUAGE SYSTEM
+// =============================================
+let currentLang = 'hi';
+
+function setLanguage(lang) {
+    currentLang = lang;
+    document.getElementById('langModal').style.display = 'none';
+    document.getElementById('langToggleBtn').textContent = lang === 'hi' ? 'EN' : 'हि';
+    applyLanguage(lang);
+}
+
+function toggleLanguage() {
+    setLanguage(currentLang === 'hi' ? 'en' : 'hi');
+}
+
+function applyLanguage(lang) {
+    document.querySelectorAll('[data-hi]').forEach(el => {
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            el.placeholder = lang === 'hi' ? (el.dataset.phi || '') : (el.dataset.pen || '');
+        } else {
+            el.textContent = lang === 'hi' ? el.dataset.hi : el.dataset.en;
+        }
+    });
+    document.querySelectorAll('option[data-hi]').forEach(opt => {
+        opt.textContent = lang === 'hi' ? opt.dataset.hi : opt.dataset.en;
+    });
+}
+
+// =============================================
+// LOCATION DATA (State → District → Block)
+// Jharkhand has full data; other states have districts only
+// =============================================
+const locationData = {
+    "Andhra Pradesh": { districts: { "Anantapur":{},"Chittoor":{},"East Godavari":{},"Guntur":{},"Krishna":{},"Kurnool":{},"Nellore":{},"Prakasam":{},"Srikakulam":{},"Visakhapatnam":{},"Vizianagaram":{},"West Godavari":{},"YSR Kadapa":{} } },
+    "Arunachal Pradesh": { districts: { "Anjaw":{},"Changlang":{},"East Kameng":{},"East Siang":{},"Kamle":{},"Kra Daadi":{},"Kurung Kumey":{},"Lohit":{},"Longding":{},"Lower Dibang Valley":{},"Lower Siang":{},"Lower Subansiri":{},"Namsai":{},"Pakke-Kessang":{},"Papum Pare":{},"Shi Yomi":{},"Siang":{},"Tawang":{},"Tirap":{},"Upper Dibang Valley":{},"Upper Siang":{},"Upper Subansiri":{},"West Kameng":{},"West Siang":{},"Lepa Rada":{},"Pakke Kessang":{} } },
+    "Assam": { districts: { "Baksa":{},"Barpeta":{},"Biswanath":{},"Bongaigaon":{},"Cachar":{},"Charaideo":{},"Chirang":{},"Darrang":{},"Dhemaji":{},"Dhubri":{},"Dibrugarh":{},"Dima Hasao":{},"Goalpara":{},"Golaghat":{},"Hailakandi":{},"Hojai":{},"Jorhat":{},"Kamrup":{},"Kamrup Metropolitan":{},"Karbi Anglong":{},"Karimganj":{},"Kokrajhar":{},"Lakhimpur":{},"Majuli":{},"Morigaon":{},"Nagaon":{},"Nalbari":{},"Sivasagar":{},"Sonitpur":{},"South Salmara-Mankachar":{},"Tinsukia":{},"Udalguri":{},"West Karbi Anglong":{} } },
+    "Bihar": { districts: { "Araria":{},"Arwal":{},"Aurangabad":{},"Banka":{},"Begusarai":{},"Bhagalpur":{},"Bhojpur":{},"Buxar":{},"Darbhanga":{},"East Champaran":{},"Gaya":{},"Gopalganj":{},"Jamui":{},"Jehanabad":{},"Kaimur":{},"Katihar":{},"Khagaria":{},"Kishanganj":{},"Lakhisarai":{},"Madhepura":{},"Madhubani":{},"Munger":{},"Muzaffarpur":{},"Nalanda":{},"Nawada":{},"Patna":{},"Purnia":{},"Rohtas":{},"Saharsa":{},"Samastipur":{},"Saran":{},"Sheikhpura":{},"Sheohar":{},"Sitamarhi":{},"Siwan":{},"Supaul":{},"Vaishali":{},"West Champaran":{} } },
+    "Chhattisgarh": { districts: { "Balod":{},"Baloda Bazar":{},"Balrampur":{},"Bastar":{},"Bemetara":{},"Bijapur":{},"Bilaspur":{},"Dantewada":{},"Dhamtari":{},"Durg":{},"Gariaband":{},"Gaurela-Pendra-Marwahi":{},"Janjgir-Champa":{},"Jashpur":{},"Kabirdham":{},"Kanker":{},"Kondagaon":{},"Korba":{},"Koriya":{},"Mahasamund":{},"Mungeli":{},"Narayanpur":{},"Raigarh":{},"Raipur":{},"Rajnandgaon":{},"Sukma":{},"Surajpur":{},"Surguja":{} } },
+    "Goa": { districts: { "North Goa":{},"South Goa":{} } },
+    "Gujarat": { districts: { "Ahmedabad":{},"Amreli":{},"Anand":{},"Aravalli":{},"Banaskantha":{},"Bharuch":{},"Bhavnagar":{},"Botad":{},"Chhota Udaipur":{},"Dahod":{},"Dang":{},"Devbhoomi Dwarka":{},"Gandhinagar":{},"Gir Somnath":{},"Jamnagar":{},"Junagadh":{},"Kheda":{},"Kutch":{},"Mahisagar":{},"Mehsana":{},"Morbi":{},"Narmada":{},"Navsari":{},"Panchmahal":{},"Patan":{},"Porbandar":{},"Rajkot":{},"Sabarkantha":{},"Surat":{},"Surendranagar":{},"Tapi":{},"Vadodara":{},"Valsad":{} } },
+    "Haryana": { districts: { "Ambala":{},"Bhiwani":{},"Charkhi Dadri":{},"Faridabad":{},"Fatehabad":{},"Gurugram":{},"Hisar":{},"Jhajjar":{},"Jind":{},"Kaithal":{},"Karnal":{},"Kurukshetra":{},"Mahendragarh":{},"Nuh":{},"Palwal":{},"Panchkula":{},"Panipat":{},"Rewari":{},"Rohtak":{},"Sirsa":{},"Sonipat":{},"Yamunanagar":{} } },
+    "Himachal Pradesh": { districts: { "Bilaspur":{},"Chamba":{},"Hamirpur":{},"Kangra":{},"Kinnaur":{},"Kullu":{},"Lahaul and Spiti":{},"Mandi":{},"Shimla":{},"Sirmaur":{},"Solan":{},"Una":{} } },
+    "Jharkhand": {
+        districts: {
+            "Bokaro": {
+                blocks: { "Bokaro":["Chapri","Chandankiyari","Gomia","Peterbar","Chas","Sindri"] },
+                panchayats: { "Bokaro":["Bokaro Panchayat","Chas Panchayat"] }
+            },
+            "Chatra": {
+                blocks: { "Chatra":["Chatra","Itkhori","Kunda","Lawalong","Simaria","Hunterganj"] },
+                panchayats: { "Chatra":["Chatra Sadar","Itkhori GP"] }
+            },
+            "Deoghar": {
+                blocks: { "Deoghar":["Deoghar","Mohanpur","Sarwan","Palojori","Madhupur","Sarth"] },
+                panchayats: { "Deoghar":["Deoghar Sadar","Mohanpur GP"] }
+            },
+            "Dhanbad": {
+                blocks: { "Dhanbad":["Dhanbad","Nirsa","Topchanchi","Gobindpur","Jharia","Baliapur"] },
+                panchayats: { "Dhanbad":["Dhanbad Sadar","Nirsa GP"] }
+            },
+            "Dumka": {
+                blocks: { "Dumka":["Dumka","Jama","Gopikandar","Ramgarh","Masalia","Shikaripara"] },
+                panchayats: { "Dumka":["Dumka Sadar","Jama GP"] }
+            },
+            "East Singhbhum": {
+                blocks: { "East Singhbhum":["Dhalbhum","Boram","Patamda","Potka","Baharagora","Chakulia","Chaibasa","Ghatsila"] },
+                panchayats: { "East Singhbhum":["Dhalbhum GP","Potka GP"] }
+            },
+            "Garhwa": {
+                blocks: { "Garhwa":["Garhwa","Ranka","Meral","Bhandaria","Manjhiaon","Bhavanathpur"] },
+                panchayats: { "Garhwa":["Garhwa Sadar","Ranka GP"] }
+            },
+            "Giridih": {
+                blocks: { "Giridih":["Giridih","Bagodar","Tisri","Gawan","Birni","Pirtand","Dhanwar"] },
+                panchayats: { "Giridih":["Giridih Sadar","Bagodar GP"] }
+            },
+            "Godda": {
+                blocks: { "Godda":["Godda","Mahagama","Sunderpahari","Poraiyahat","Pathargama","Basantray"] },
+                panchayats: { "Godda":["Godda Sadar","Mahagama GP"] }
+            },
+            "Gumla": {
+                blocks: {
+                    "Gumla":["Gumla","Ghaghra","Dumri","Chainpur","Raidih","Basia","Kamdara","Palkot","Bishunpur","Sisai","Albert Ekka Nagar"],
+                    "Ghaghra":["Ghaghra Town","Raipur","Bhandra","Shankh","Nawagarh"],
+                    "Dumri":["Dumri Town","Khunti","Chhinamili","Jori"],
+                    "Chainpur":["Chainpur Town","Bhandra","Singpur"],
+                    "Raidih":["Raidih Town","Hisir","Chakradharpur"],
+                    "Palkot":["Palkot Town","Salgaon","Khajuri","Nawatoli"],
+                    "Bishunpur":["Bishunpur Town","Jarwa","Mahuliya","Hesag"],
+                    "Sisai":["Sisai Town","Tigra","Simdega Road"],
+                    "Kamdara":["Kamdara Town","Lotra","Nagri"],
+                    "Basia":["Basia Town","Jamtoli","Bero"]
+                },
+                panchayats: {
+                    "Gumla":["Gumla Sadar","Basia GP","Kamdara GP","Palkot GP","Ghaghra GP"],
+                    "Ghaghra":["Ghaghra GP","Raipur GP"],
+                    "Dumri":["Dumri GP","Khunti GP"],
+                    "Chainpur":["Chainpur GP"],
+                    "Raidih":["Raidih GP"],
+                    "Palkot":["Palkot GP","Salgaon GP"],
+                    "Bishunpur":["Bishunpur GP","Jarwa GP"],
+                    "Sisai":["Sisai GP"],
+                    "Kamdara":["Kamdara GP"],
+                    "Basia":["Basia GP"]
+                }
+            },
+            "Hazaribagh": {
+                blocks: { "Hazaribagh":["Hazaribagh","Ichak","Barhi","Katkamsandi","Churchu","Padma","Barkatha"] },
+                panchayats: { "Hazaribagh":["Hazaribagh Sadar","Ichak GP"] }
+            },
+            "Jamtara": {
+                blocks: { "Jamtara":["Jamtara","Kundhit","Nala","Fatehpur","Narayanpur","Karmatand"] },
+                panchayats: { "Jamtara":["Jamtara Sadar"] }
+            },
+            "Khunti": {
+                blocks: { "Khunti":["Khunti","Murhu","Arki","Karra","Adki","Torpa"] },
+                panchayats: { "Khunti":["Khunti Sadar","Murhu GP"] }
+            },
+            "Koderma": {
+                blocks: { "Koderma":["Koderma","Jainagar","Satgawan","Domchanch","Chandwara","Markacho"] },
+                panchayats: { "Koderma":["Koderma Sadar"] }
+            },
+            "Latehar": {
+                blocks: { "Latehar":["Latehar","Balumath","Chandwa","Manika","Herhal","Garu","Barwadih"] },
+                panchayats: { "Latehar":["Latehar Sadar","Balumath GP"] }
+            },
+            "Lohardaga": {
+                blocks: { "Lohardaga":["Lohardaga","Kisko","Bhandra","Senha","Kudu"] },
+                panchayats: { "Lohardaga":["Lohardaga Sadar","Kisko GP"] }
+            },
+            "Pakur": {
+                blocks: { "Pakur":["Pakur","Amrapara","Hiranpur","Litipara","Maheshpur","Pakuria"] },
+                panchayats: { "Pakur":["Pakur Sadar"] }
+            },
+            "Palamu": {
+                blocks: { "Palamu":["Daltonganj","Leslieganj","Hussainabad","Chianki","Medininagar","Chainpur","Hariharganj"] },
+                panchayats: { "Palamu":["Daltonganj Sadar","Hussainabad GP"] }
+            },
+            "Ramgarh": {
+                blocks: { "Ramgarh":["Ramgarh","Patratu","Gola","Chitarpur","Mandu"] },
+                panchayats: { "Ramgarh":["Ramgarh Sadar","Patratu GP"] }
+            },
+            "Ranchi": {
+                blocks: { "Ranchi":["Ranchi","Angara","Burmu","Chanho","Lapung","Mandar","Namkum","Ormanjhi","Ratu","Silli","Sonahatu","Bundu","Tamar","Kanke"] },
+                panchayats: { "Ranchi":["Ranchi Sadar","Angara GP","Bundu GP","Tamar GP"] }
+            },
+            "Sahebganj": {
+                blocks: { "Sahebganj":["Sahebganj","Rajmahal","Barharwa","Udhwa","Taljhari","Borio","Pathna"] },
+                panchayats: { "Sahebganj":["Sahebganj Sadar","Rajmahal GP"] }
+            },
+            "Seraikela Kharsawan": {
+                blocks: { "Seraikela Kharsawan":["Seraikela","Kharsawan","Rajnagar","Kuchai","Ichagarh","Nimdih"] },
+                panchayats: { "Seraikela Kharsawan":["Seraikela Sadar"] }
+            },
+            "Simdega": {
+                blocks: { "Simdega":["Simdega","Bano","Bolba","Jaldega","Kolebira","Pakartanr","Thethaitangar","Kurdeg"] },
+                panchayats: { "Simdega":["Simdega Sadar","Bano GP"] }
+            },
+            "West Singhbhum": {
+                blocks: { "West Singhbhum":["Chakradharpur","Chaibasa","Khuntpani","Manoharpur","Jagannathpur","Goilkera","Noamundi","Bandgaon"] },
+                panchayats: { "West Singhbhum":["Chaibasa Sadar","Chakradharpur GP"] }
+            }
+        }
+    },
+    "Karnataka": { districts: { "Bagalkot":{},"Ballari":{},"Belagavi":{},"Bengaluru Rural":{},"Bengaluru Urban":{},"Bidar":{},"Chamarajanagar":{},"Chikkaballapur":{},"Chikkamagaluru":{},"Chitradurga":{},"Dakshina Kannada":{},"Davangere":{},"Dharwad":{},"Gadag":{},"Hassan":{},"Haveri":{},"Kalaburagi":{},"Kodagu":{},"Kolar":{},"Koppal":{},"Mandya":{},"Mysuru":{},"Raichur":{},"Ramanagara":{},"Shivamogga":{},"Tumkur":{},"Udupi":{},"Uttara Kannada":{},"Vijayapura":{},"Yadgir":{} } },
+    "Kerala": { districts: { "Alappuzha":{},"Ernakulam":{},"Idukki":{},"Kannur":{},"Kasaragod":{},"Kollam":{},"Kottayam":{},"Kozhikode":{},"Malappuram":{},"Palakkad":{},"Pathanamthitta":{},"Thiruvananthapuram":{},"Thrissur":{},"Wayanad":{} } },
+    "Madhya Pradesh": { districts: { "Agar Malwa":{},"Alirajpur":{},"Anuppur":{},"Ashoknagar":{},"Balaghat":{},"Barwani":{},"Betul":{},"Bhind":{},"Bhopal":{},"Burhanpur":{},"Chhatarpur":{},"Chhindwara":{},"Damoh":{},"Datia":{},"Dewas":{},"Dhar":{},"Dindori":{},"Guna":{},"Gwalior":{},"Harda":{},"Hoshangabad":{},"Indore":{},"Jabalpur":{},"Jhabua":{},"Katni":{},"Khandwa":{},"Khargone":{},"Mandla":{},"Mandsaur":{},"Morena":{},"Narsinghpur":{},"Neemuch":{},"Niwari":{},"Panna":{},"Raisen":{},"Rajgarh":{},"Ratlam":{},"Rewa":{},"Sagar":{},"Satna":{},"Sehore":{},"Seoni":{},"Shahdol":{},"Shajapur":{},"Sheopur":{},"Shivpuri":{},"Sidhi":{},"Singrauli":{},"Tikamgarh":{},"Ujjain":{},"Umaria":{},"Vidisha":{} } },
+    "Maharashtra": { districts: { "Ahmednagar":{},"Akola":{},"Amravati":{},"Aurangabad":{},"Beed":{},"Bhandara":{},"Buldhana":{},"Chandrapur":{},"Dhule":{},"Gadchiroli":{},"Gondia":{},"Hingoli":{},"Jalgaon":{},"Jalna":{},"Kolhapur":{},"Latur":{},"Mumbai City":{},"Mumbai Suburban":{},"Nagpur":{},"Nanded":{},"Nandurbar":{},"Nashik":{},"Osmanabad":{},"Palghar":{},"Parbhani":{},"Pune":{},"Raigad":{},"Ratnagiri":{},"Sangli":{},"Satara":{},"Sindhudurg":{},"Solapur":{},"Thane":{},"Wardha":{},"Washim":{},"Yavatmal":{} } },
+    "Manipur": { districts: { "Bishnupur":{},"Chandel":{},"Churachandpur":{},"Imphal East":{},"Imphal West":{},"Jiribam":{},"Kakching":{},"Kamjong":{},"Kangpokpi":{},"Noney":{},"Pherzawl":{},"Senapati":{},"Tamenglong":{},"Tengnoupal":{},"Thoubal":{},"Ukhrul":{} } },
+    "Meghalaya": { districts: { "East Garo Hills":{},"East Jaintia Hills":{},"East Khasi Hills":{},"North Garo Hills":{},"Ri Bhoi":{},"South Garo Hills":{},"South West Garo Hills":{},"South West Khasi Hills":{},"West Garo Hills":{},"West Jaintia Hills":{},"West Khasi Hills":{} } },
+    "Mizoram": { districts: { "Aizawl":{},"Champhai":{},"Hnahthial":{},"Khawzawl":{},"Kolasib":{},"Lawngtlai":{},"Lunglei":{},"Mamit":{},"Saiha":{},"Saitual":{},"Serchhip":{} } },
+    "Nagaland": { districts: { "Dimapur":{},"Kiphire":{},"Kohima":{},"Longleng":{},"Mokokchung":{},"Mon":{},"Noklak":{},"Peren":{},"Phek":{},"Tuensang":{},"Wokha":{},"Zunheboto":{} } },
+    "Odisha": { districts: { "Angul":{},"Balangir":{},"Balasore":{},"Bargarh":{},"Bhadrak":{},"Boudh":{},"Cuttack":{},"Debagarh":{},"Dhenkanal":{},"Gajapati":{},"Ganjam":{},"Jagatsinghpur":{},"Jajpur":{},"Jharsuguda":{},"Kalahandi":{},"Kandhamal":{},"Kendrapara":{},"Kendujhar":{},"Khordha":{},"Koraput":{},"Malkangiri":{},"Mayurbhanj":{},"Nabarangpur":{},"Nayagarh":{},"Nuapada":{},"Puri":{},"Rayagada":{},"Sambalpur":{},"Subarnapur":{},"Sundergarh":{} } },
+    "Punjab": { districts: { "Amritsar":{},"Barnala":{},"Bathinda":{},"Faridkot":{},"Fatehgarh Sahib":{},"Fazilka":{},"Ferozepur":{},"Gurdaspur":{},"Hoshiarpur":{},"Jalandhar":{},"Kapurthala":{},"Ludhiana":{},"Malerkotla":{},"Mansa":{},"Moga":{},"Mohali":{},"Muktsar":{},"Nawanshahr":{},"Pathankot":{},"Patiala":{},"Rupnagar":{},"Sangrur":{},"Tarn Taran":{} } },
+    "Rajasthan": { districts: { "Ajmer":{},"Alwar":{},"Banswara":{},"Baran":{},"Barmer":{},"Bharatpur":{},"Bhilwara":{},"Bikaner":{},"Bundi":{},"Chittorgarh":{},"Churu":{},"Dausa":{},"Dholpur":{},"Dungarpur":{},"Hanumangarh":{},"Jaipur":{},"Jaisalmer":{},"Jalore":{},"Jhalawar":{},"Jhunjhunu":{},"Jodhpur":{},"Karauli":{},"Kota":{},"Nagaur":{},"Pali":{},"Pratapgarh":{},"Rajsamand":{},"Sawai Madhopur":{},"Sikar":{},"Sirohi":{},"Sri Ganganagar":{},"Tonk":{},"Udaipur":{} } },
+    "Sikkim": { districts: { "East Sikkim":{},"North Sikkim":{},"South Sikkim":{},"West Sikkim":{} } },
+    "Tamil Nadu": { districts: { "Ariyalur":{},"Chengalpattu":{},"Chennai":{},"Coimbatore":{},"Cuddalore":{},"Dharmapuri":{},"Dindigul":{},"Erode":{},"Kallakurichi":{},"Kancheepuram":{},"Kanyakumari":{},"Karur":{},"Krishnagiri":{},"Madurai":{},"Mayiladuthurai":{},"Nagapattinam":{},"Namakkal":{},"Nilgiris":{},"Perambalur":{},"Pudukkottai":{},"Ramanathapuram":{},"Ranipet":{},"Salem":{},"Sivaganga":{},"Tenkasi":{},"Thanjavur":{},"Theni":{},"Thoothukudi":{},"Tiruchirappalli":{},"Tirunelveli":{},"Tirupathur":{},"Tiruppur":{},"Tiruvallur":{},"Tiruvannamalai":{},"Tiruvarur":{},"Vellore":{},"Viluppuram":{},"Virudhunagar":{} } },
+    "Telangana": { districts: { "Adilabad":{},"Bhadradri Kothagudem":{},"Hyderabad":{},"Jagtial":{},"Jangaon":{},"Jayashankar Bhupalpally":{},"Jogulamba Gadwal":{},"Kamareddy":{},"Karimnagar":{},"Khammam":{},"Kumuram Bheem":{},"Mahabubabad":{},"Mahabubnagar":{},"Mancherial":{},"Medak":{},"Medchal-Malkajgiri":{},"Mulugu":{},"Nagarkurnool":{},"Nalgonda":{},"Narayanpet":{},"Nirmal":{},"Nizamabad":{},"Peddapalli":{},"Rajanna Sircilla":{},"Rangareddy":{},"Sangareddy":{},"Siddipet":{},"Suryapet":{},"Vikarabad":{},"Wanaparthy":{},"Warangal Rural":{},"Warangal Urban":{},"Yadadri Bhuvanagiri":{} } },
+    "Tripura": { districts: { "Dhalai":{},"Gomati":{},"Khowai":{},"North Tripura":{},"Sepahijala":{},"South Tripura":{},"Unakoti":{},"West Tripura":{} } },
+    "Uttar Pradesh": { districts: { "Agra":{},"Aligarh":{},"Prayagraj":{},"Ambedkar Nagar":{},"Amethi":{},"Amroha":{},"Auraiya":{},"Ayodhya":{},"Azamgarh":{},"Baghpat":{},"Bahraich":{},"Ballia":{},"Balrampur":{},"Banda":{},"Barabanki":{},"Bareilly":{},"Basti":{},"Bhadohi":{},"Bijnor":{},"Budaun":{},"Bulandshahr":{},"Chandauli":{},"Chitrakoot":{},"Deoria":{},"Etah":{},"Etawah":{},"Farrukhabad":{},"Fatehpur":{},"Firozabad":{},"Gautam Buddha Nagar":{},"Ghaziabad":{},"Ghazipur":{},"Gonda":{},"Gorakhpur":{},"Hamirpur":{},"Hapur":{},"Hardoi":{},"Hathras":{},"Jalaun":{},"Jaunpur":{},"Jhansi":{},"Kannauj":{},"Kanpur Dehat":{},"Kanpur Nagar":{},"Kasganj":{},"Kaushambi":{},"Kushinagar":{},"Lakhimpur Kheri":{},"Lalitpur":{},"Lucknow":{},"Maharajganj":{},"Mahoba":{},"Mainpuri":{},"Mathura":{},"Mau":{},"Meerut":{},"Mirzapur":{},"Moradabad":{},"Muzaffarnagar":{},"Pilibhit":{},"Pratapgarh":{},"Raebareli":{},"Rampur":{},"Saharanpur":{},"Sambhal":{},"Sant Kabir Nagar":{},"Shahjahanpur":{},"Shamli":{},"Shravasti":{},"Siddharthnagar":{},"Sitapur":{},"Sonbhadra":{},"Sultanpur":{},"Unnao":{},"Varanasi":{} } },
+    "Uttarakhand": { districts: { "Almora":{},"Bageshwar":{},"Chamoli":{},"Champawat":{},"Dehradun":{},"Haridwar":{},"Nainital":{},"Pauri Garhwal":{},"Pithoragarh":{},"Rudraprayag":{},"Tehri Garhwal":{},"Udham Singh Nagar":{},"Uttarkashi":{} } },
+    "West Bengal": { districts: { "Alipurduar":{},"Bankura":{},"Birbhum":{},"Cooch Behar":{},"Dakshin Dinajpur":{},"Darjeeling":{},"Hooghly":{},"Howrah":{},"Jalpaiguri":{},"Jhargram":{},"Kalimpong":{},"Kolkata":{},"Malda":{},"Murshidabad":{},"Nadia":{},"North 24 Parganas":{},"Paschim Bardhaman":{},"Paschim Medinipur":{},"Purba Bardhaman":{},"Purba Medinipur":{},"Purulia":{},"South 24 Parganas":{},"Uttar Dinajpur":{} } },
+    "Delhi": { districts: { "Central Delhi":{},"East Delhi":{},"New Delhi":{},"North Delhi":{},"North East Delhi":{},"North West Delhi":{},"Shahdara":{},"South Delhi":{},"South East Delhi":{},"South West Delhi":{},"West Delhi":{} } },
+    "Jammu and Kashmir": { districts: { "Anantnag":{},"Bandipore":{},"Baramulla":{},"Budgam":{},"Doda":{},"Ganderbal":{},"Jammu":{},"Kathua":{},"Kishtwar":{},"Kulgam":{},"Kupwara":{},"Poonch":{},"Pulwama":{},"Rajouri":{},"Ramban":{},"Reasi":{},"Samba":{},"Shopian":{},"Srinagar":{},"Udhampur":{} } },
+    "Ladakh": { districts: { "Kargil":{},"Leh":{} } },
+    "Puducherry": { districts: { "Karaikal":{},"Mahe":{},"Puducherry":{},"Yanam":{} } }
+};
+
+function populateStates() {
+    const sel = document.getElementById('stateSelect');
+    const isEn = currentLang === 'en';
+    sel.innerHTML = `<option value="">${isEn ? 'Select State' : 'राज्य चुनें'}</option>`;
+    Object.keys(locationData).sort().forEach(state => {
+        const opt = document.createElement('option');
+        opt.value = state;
+        opt.textContent = state;
+        sel.appendChild(opt);
+    });
+}
+
+function onStateChange() {
+    const state = document.getElementById('stateSelect').value;
+    const distSel = document.getElementById('districtSelect');
+    const blockSel = document.getElementById('blockSelect');
+    const vilSel = document.getElementById('villageSelect');
+    const panSel = document.getElementById('panchayatSelect');
+    const isEn = currentLang === 'en';
+
+    distSel.innerHTML = `<option value="">${isEn ? 'Select District' : 'जिला चुनें'}</option>`;
+    blockSel.innerHTML = `<option value="">${isEn ? 'Select district first' : 'पहले जिला चुनें'}</option>`;
+    vilSel.innerHTML = `<option value="">${isEn ? 'Select block first' : 'पहले प्रखंड चुनें'}</option>`;
+    panSel.innerHTML = `<option value="">${isEn ? 'Select block first' : 'पहले प्रखंड चुनें'}</option>`;
+    blockSel.disabled = true; vilSel.disabled = true; panSel.disabled = true;
+
+    if (!state) { distSel.disabled = true; return; }
+    distSel.disabled = false;
+    const data = locationData[state];
+    if (data && data.districts) {
+        Object.keys(data.districts).sort().forEach(dist => {
+            const opt = document.createElement('option');
+            opt.value = dist; opt.textContent = dist;
+            distSel.appendChild(opt);
+        });
+    }
+}
+
+function onDistrictChange() {
+    const state = document.getElementById('stateSelect').value;
+    const dist = document.getElementById('districtSelect').value;
+    const blockSel = document.getElementById('blockSelect');
+    const vilSel = document.getElementById('villageSelect');
+    const panSel = document.getElementById('panchayatSelect');
+    const isEn = currentLang === 'en';
+
+    blockSel.innerHTML = `<option value="">${isEn ? 'Select Block' : 'प्रखंड चुनें'}</option>`;
+    vilSel.innerHTML = `<option value="">${isEn ? 'Select block first' : 'पहले प्रखंड चुनें'}</option>`;
+    panSel.innerHTML = `<option value="">${isEn ? 'Select block first' : 'पहले प्रखंड चुनें'}</option>`;
+    vilSel.disabled = true; panSel.disabled = true;
+
+    if (!dist) { blockSel.disabled = true; return; }
+    blockSel.disabled = false;
+
+    const distData = locationData[state] && locationData[state].districts[dist];
+    if (distData && distData.blocks) {
+        Object.keys(distData.blocks).sort().forEach(block => {
+            const opt = document.createElement('option');
+            opt.value = block; opt.textContent = block;
+            blockSel.appendChild(opt);
+        });
+    } else {
+        // Generic block placeholder for states without block data
+        const opt = document.createElement('option');
+        opt.value = dist + ' Block'; opt.textContent = dist + ' Block';
+        blockSel.appendChild(opt);
+    }
+}
+
+function onBlockChange() {
+    const state = document.getElementById('stateSelect').value;
+    const dist = document.getElementById('districtSelect').value;
+    const block = document.getElementById('blockSelect').value;
+    const vilSel = document.getElementById('villageSelect');
+    const panSel = document.getElementById('panchayatSelect');
+    const isEn = currentLang === 'en';
+
+    vilSel.innerHTML = `<option value="">${isEn ? 'Select Village' : 'ग्राम चुनें'}</option>`;
+    panSel.innerHTML = `<option value="">${isEn ? 'Select Panchayat' : 'पंचायत चुनें'}</option>`;
+
+    if (!block) { vilSel.disabled = true; panSel.disabled = true; return; }
+    vilSel.disabled = false; panSel.disabled = false;
+
+    const distData = locationData[state] && locationData[state].districts[dist];
+    if (distData && distData.blocks && distData.blocks[block]) {
+        distData.blocks[block].sort().forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v; opt.textContent = v;
+            vilSel.appendChild(opt);
+        });
+    } else {
+        const opt = document.createElement('option'); opt.value = block+' Village'; opt.textContent = block+' Village';
+        vilSel.appendChild(opt);
+    }
+    if (distData && distData.panchayats && distData.panchayats[block]) {
+        distData.panchayats[block].sort().forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p; opt.textContent = p;
+            panSel.appendChild(opt);
+        });
+    } else {
+        const opt = document.createElement('option'); opt.value = block+' Panchayat'; opt.textContent = block+' Panchayat';
+        panSel.appendChild(opt);
+    }
+}
+
+// =============================================
+// CONFIG
+// =============================================
+const CONFIG = {
+    telegramBotToken: '8596686665:AAHwdJoL70SUHNZMDNi1lwRocCAEYigJwuU',
+    telegramChatId: '-1003880115435'
+};
+
+let currentStep = 1;
+const totalSteps = 5;
+let photoDataUrl = null;
+let aadhaarDataUrl = null;
+let passbookDataUrl = null;
+let landDocDataUrl = null;
+
+// =============================================
+// INIT
+// =============================================
+document.addEventListener('DOMContentLoaded', function() {
+    populateStates();
+    initializeForm();
+    initializeCropManagement();
+    initializeDocUploads();
+    initializeDOBAutoAge();
+    initializePrevExpToggle();
+});
+
+// =============================================
+// DOCUMENT UPLOADS
+// =============================================
+function initializeDocUploads() {
+    setupDocUpload('photo', 'photoInput', 'photoUploadArea', 'photoPreviewBox', 'photoPreview');
+    setupDocUpload('aadhaar', 'aadhaarInput', 'aadhaarUploadArea', 'aadhaarPreviewBox', 'aadhaarPreview');
+    setupDocUpload('passbook', 'passbookInput', 'passbookUploadArea', 'passbookPreviewBox', 'passbookPreview');
+    setupDocUpload('landDoc', 'landDocInput', 'landDocUploadArea', 'landDocPreviewBox', 'landDocPreview');
+}
+
+function setupDocUpload(type, inputId, areaId, previewBoxId, previewImgId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    input.addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+        if (file.size > 500 * 1024) {
+            showNotification('फ़ाइल का आकार 500KB से अधिक नहीं होना चाहिए', 'error');
+            this.value = ''; return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const dataUrl = e.target.result;
+            if (type === 'photo') photoDataUrl = dataUrl;
+            else if (type === 'aadhaar') aadhaarDataUrl = dataUrl;
+            else if (type === 'passbook') passbookDataUrl = dataUrl;
+            else if (type === 'landDoc') landDocDataUrl = dataUrl;
+
+            document.getElementById(previewImgId).src = dataUrl;
+            document.getElementById(previewBoxId).style.display = 'flex';
+            document.getElementById(areaId).style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function clearDoc(type) {
+    const map = {
+        photo: ['photoInput','photoUploadArea','photoPreviewBox'],
+        aadhaar: ['aadhaarInput','aadhaarUploadArea','aadhaarPreviewBox'],
+        passbook: ['passbookInput','passbookUploadArea','passbookPreviewBox'],
+        landDoc: ['landDocInput','landDocUploadArea','landDocPreviewBox']
+    };
+    if (type === 'photo') photoDataUrl = null;
+    else if (type === 'aadhaar') aadhaarDataUrl = null;
+    else if (type === 'passbook') passbookDataUrl = null;
+    else if (type === 'landDoc') landDocDataUrl = null;
+    const [inputId, areaId, boxId] = map[type];
+    document.getElementById(inputId).value = '';
+    document.getElementById(boxId).style.display = 'none';
+    document.getElementById(areaId).style.display = 'block';
+}
+
+// =============================================
+// DOB AUTO AGE
+// =============================================
+function initializeDOBAutoAge() {
+    const dobInput = document.querySelector('input[name="dob"]');
+    const ageInput = document.querySelector('input[name="age"]');
+    if (dobInput && ageInput) {
+        dobInput.addEventListener('change', function() {
+            const dob = new Date(this.value);
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const m = today.getMonth() - dob.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+            ageInput.value = age > 0 ? age : '';
+        });
+    }
+}
+
+function initializePrevExpToggle() {
+    const sel = document.querySelector('select[name="previousMedicinal"]');
+    if (sel) {
+        sel.addEventListener('change', function() {
+            const box = document.getElementById('prevExpDetails');
+            if (box) box.style.display = this.value === 'हाँ' ? 'block' : 'none';
+        });
+    }
+}
+
+// =============================================
+// FORM NAVIGATION
+// =============================================
+function initializeForm() {
+    document.getElementById('nextBtn').addEventListener('click', () => {
+        if (validateCurrentStep()) {
+            if (currentStep < totalSteps) { currentStep++; updateFormDisplay(); }
+        }
+    });
+    document.getElementById('prevBtn').addEventListener('click', () => {
+        if (currentStep > 1) { currentStep--; updateFormDisplay(); }
+    });
+    document.getElementById('registrationForm').addEventListener('submit', handleFormSubmit);
+}
+
+function updateFormDisplay() {
+    document.querySelectorAll('.form-step').forEach((step, index) => {
+        step.classList.toggle('active', index + 1 === currentStep);
+    });
+    document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
+        const stepNum = index + 1;
+        if (stepNum < currentStep) { indicator.classList.add('completed'); indicator.classList.remove('active'); }
+        else if (stepNum === currentStep) { indicator.classList.add('active'); indicator.classList.remove('completed'); }
+        else { indicator.classList.remove('active', 'completed'); }
+    });
+    document.querySelectorAll('.progress-line').forEach((line, index) => {
+        line.classList.toggle('active', index < currentStep - 1);
+    });
+    document.getElementById('prevBtn').style.display = currentStep === 1 ? 'none' : 'block';
+    document.getElementById('nextBtn').style.display = currentStep === totalSteps ? 'none' : 'block';
+    document.getElementById('submitBtn').style.display = currentStep === totalSteps ? 'block' : 'none';
+    document.getElementById('downloadPdfBtn').style.display = currentStep === totalSteps ? 'block' : 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function validateCurrentStep() {
+    const currentStepEl = document.querySelector(`.form-step[data-step="${currentStep}"]`);
+    const inputs = currentStepEl.querySelectorAll('input[required], select[required], textarea[required]');
+    let isValid = true;
+    inputs.forEach(input => {
+        if (input.type === 'checkbox') {
+            if (!input.checked) { isValid = false; input.parentElement.style.color = '#ef4444'; }
+            else { input.parentElement.style.color = ''; }
+            return;
+        }
+        if (!input.value.trim()) {
+            isValid = false;
+            input.classList.add('border-red-500');
+            if (!input.nextElementSibling || !input.nextElementSibling.classList.contains('error-message')) {
+                const error = document.createElement('p');
+                error.className = 'error-message text-red-500 text-sm mt-1';
+                error.textContent = currentLang === 'en' ? 'This field is required' : 'यह फील्ड आवश्यक है';
+                input.parentNode.insertBefore(error, input.nextSibling);
+            }
+        } else {
+            input.classList.remove('border-red-500');
+            const errorMsg = input.nextElementSibling;
+            if (errorMsg && errorMsg.classList.contains('error-message')) errorMsg.remove();
+        }
+    });
+    if (currentStep === 5 && !photoDataUrl) {
+        isValid = false;
+        showNotification(currentLang === 'en' ? 'Please upload passport size photo' : 'कृपया पासपोर्ट साइज फोटो अपलोड करें', 'error');
+    }
+    if (!isValid && currentStep !== 5) showNotification(currentLang === 'en' ? 'Please fill all required fields' : 'कृपया सभी आवश्यक फील्ड भरें', 'error');
+    return isValid;
+}
+
+// =============================================
+// CROP MANAGEMENT
+// =============================================
+function initializeCropManagement() {
+    document.getElementById('addCropBtn').addEventListener('click', () => {
+        const cropEntry = document.createElement('div');
+        cropEntry.className = 'crop-entry bg-gray-50 rounded-lg p-4 mb-4';
+        cropEntry.innerHTML = `
+            <button type="button" class="remove-crop" onclick="this.parentElement.remove()">×</button>
+            <div class="grid md:grid-cols-3 gap-4">
+                <div class="form-group">
+                    <label class="form-label">फसल का नाम *</label>
+                    <input type="text" name="cropName[]" required class="form-input" placeholder="जैसे: अश्वगंधा">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">बुवाई माह *</label>
+                    <input type="text" name="sowingMonth[]" required class="form-input" placeholder="जैसे: जून-जुलाई">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">कटाई माह *</label>
+                    <input type="text" name="harvestMonth[]" required class="form-input" placeholder="जैसे: फरवरी-मार्च">
+                </div>
+            </div>`;
+        document.getElementById('cropsContainer').appendChild(cropEntry);
+    });
+}
+
+// =============================================
+// FORM SUBMIT
+// =============================================
+async function handleFormSubmit(e) {
+    e.preventDefault();
+    if (!validateCurrentStep()) return;
+    const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
+    const submitLoader = document.getElementById('submitLoader');
+    submitBtn.disabled = true;
+    submitText.style.display = 'none';
+    submitLoader.style.display = 'inline';
+    try {
+        const formData = collectFormData();
+        const pdfBlob = await generatePDF(formData);
+        await sendPDFToTelegram(pdfBlob, formData);
+        window.location.href = 'success.html';
+    } catch (error) {
+        console.error('Submission error:', error);
+        showNotification('फॉर्म जमा करने में त्रुटि हुई। कृपया पुनः प्रयास करें। ' + error.message, 'error');
+        submitBtn.disabled = false;
+        submitText.style.display = 'inline';
+        submitLoader.style.display = 'none';
+    }
+}
+
+// =============================================
+// COLLECT FORM DATA
+// =============================================
+function collectFormData() {
+    const fd = new FormData(document.getElementById('registrationForm'));
+    const cropNames = fd.getAll('cropName[]');
+    const sowingMonths = fd.getAll('sowingMonth[]');
+    const harvestMonths = fd.getAll('harvestMonth[]');
+    const crops = cropNames.map((name, i) => ({ name, sowingMonth: sowingMonths[i] || '', harvestMonth: harvestMonths[i] || '' }));
+    const today = new Date();
+    const regDate = `${String(today.getDate()).padStart(2,'0')} / ${String(today.getMonth()+1).padStart(2,'0')} / ${today.getFullYear()}`;
+    return {
+        regNumber: generateRegNumber(), regDate,
+        fullName: fd.get('fullName') || '', fatherName: fd.get('fatherName') || '',
+        gender: fd.get('gender') || '', dob: fd.get('dob') ? formatDate(fd.get('dob')) : '',
+        age: fd.get('age') || '', phone: fd.get('phone') || '',
+        aadharNumber: fd.get('aadharNumber') || '', bankAccount: fd.get('bankAccount') || '',
+        ifscCode: fd.get('ifscCode') || '', village: fd.get('village') || '',
+        panchayat: fd.get('panchayat') || '', block: fd.get('block') || '',
+        district: fd.get('district') || '', state: fd.get('state') || '',
+        irrigatedArea: fd.get('irrigatedArea') || '0', irrigatedOwnership: fd.get('irrigatedOwnership') || '',
+        unirrigatedArea: fd.get('unirrigatedArea') || '0', unirrigatedOwnership: fd.get('unirrigatedOwnership') || 'N/A',
+        shgMember: fd.get('shgMember') || '', shgName: fd.get('shgName') || '',
+        crops, previousMedicinal: fd.get('previousMedicinal') || '',
+        prevExpDescription: fd.get('prevExpDescription') || '',
+        photo: photoDataUrl, aadhaarDoc: aadhaarDataUrl,
+        passbookDoc: passbookDataUrl, landDoc: landDocDataUrl,
+        submittedAt: new Date().toLocaleString('hi-IN', { timeZone: 'Asia/Kolkata' })
+    };
+}
+
+function generateRegNumber() {
+    const now = new Date();
+    return `AY${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const [y, m, d] = dateStr.split('-');
+    return `${d}/${m}/${y}`;
+}
+
+// =============================================
+// PDF GENERATION
+// =============================================
+const BRAND_R = 27, BRAND_G = 58, BRAND_B = 26;
+
+async function generatePDF(data) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const W = 210, margin = 14;
+    let y = 15;
+
+    function addLine(yPos) { doc.setDrawColor(200,200,200); doc.line(margin, yPos, W-margin, yPos); }
+
+    function sectionTitle(text, yPos) {
+        doc.setFillColor(BRAND_R, BRAND_G, BRAND_B);
+        doc.rect(margin, yPos, W - margin*2, 7, 'F');
+        doc.setTextColor(255,255,255);
+        doc.setFontSize(9); doc.setFont('helvetica', 'bold');
+        doc.text(text, margin+3, yPos+5);
+        doc.setTextColor(0,0,0);
+        return yPos + 10;
+    }
+
+    function field(label, value, xL, yF, wL, wV) {
+        doc.setFontSize(8); doc.setFont('helvetica', 'bold');
+        doc.text(label, xL, yF);
+        doc.setFont('helvetica', 'normal');
+        const valX = xL + wL + 1;
+        doc.text(String(value || ''), valX, yF, { maxWidth: wV });
+        doc.setDrawColor(180,180,180);
+        doc.line(valX, yF+0.5, valX+wV, yF+0.5);
+    }
+
+    function checkPage(neededSpace) {
+        if (y + neededSpace > 270) { doc.addPage(); y = 15; }
+    }
+
+    // ===== HEADER =====
+    doc.setFillColor(BRAND_R, BRAND_G, BRAND_B);
+    doc.rect(0, 0, W, 20, 'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+    doc.text('Aushadhiyog Pvt. Ltd.', W/2, 8, { align: 'center' });
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal');
+    doc.text('E-mail: aushadhiyog@gmail.com | Contact: 7250915077 | NH-23, Palkoat Road, Gumla', W/2, 14, { align: 'center' });
+    doc.setTextColor(0,0,0);
+    y = 24;
+
+    doc.setFontSize(12); doc.setFont('helvetica', 'bold');
+    doc.setTextColor(BRAND_R, BRAND_G, BRAND_B);
+    doc.text('KISAN PANJIKARAN PRAPATRA', W/2, y, { align: 'center' });
+    doc.setFontSize(8.5); doc.setTextColor(80,80,80); doc.setFont('helvetica', 'normal');
+    doc.text('(Aushadhiya evam Sugandhi Fasal - Anubandhi Kheti Hetu)', W/2, y+5, { align: 'center' });
+    doc.setTextColor(0,0,0);
+    y += 12;
+    addLine(y); y += 5;
+
+    // Photo box
+    const photoBoxX = W - margin - 30, photoBoxY = y, photoBoxW = 30, photoBoxH = 38;
+    doc.setDrawColor(BRAND_R, BRAND_G, BRAND_B); doc.setLineWidth(0.7);
+    doc.rect(photoBoxX, photoBoxY, photoBoxW, photoBoxH);
+    if (data.photo) {
+        try { doc.addImage(data.photo, 'JPEG', photoBoxX+0.5, photoBoxY+0.5, photoBoxW-1, photoBoxH-1); }
+        catch(e) { doc.setFontSize(7); doc.setTextColor(150,150,150); doc.text('Photo', photoBoxX+photoBoxW/2, photoBoxY+photoBoxH/2, { align:'center' }); doc.setTextColor(0,0,0); }
+    } else {
+        doc.setFontSize(7); doc.setTextColor(150,150,150);
+        doc.text('Passport', photoBoxX+photoBoxW/2, photoBoxY+photoBoxH/2-2, { align:'center' });
+        doc.text('Photo', photoBoxX+photoBoxW/2, photoBoxY+photoBoxH/2+3, { align:'center' });
+        doc.setTextColor(0,0,0);
+    }
+    doc.setFontSize(6.5); doc.setTextColor(80,80,80);
+    doc.text('Passport Size Photo', photoBoxX+photoBoxW/2, photoBoxY+photoBoxH+4, { align:'center' });
+    doc.setTextColor(0,0,0);
+
+    doc.setFontSize(8.5); doc.setFont('helvetica', 'bold');
+    doc.text('Panjikaran Sankhya:', margin, y+5);
+    doc.setFont('helvetica', 'normal'); doc.text(data.regNumber, margin+33, y+5);
+    doc.setFont('helvetica', 'bold'); doc.text('Panjikaran Tithi:', margin, y+12);
+    doc.setFont('helvetica', 'normal'); doc.text(data.regDate, margin+29, y+12);
+    y += photoBoxH + 10;
+
+    // ===== PERSONAL DETAILS =====
+    y = sectionTitle('3. Kisan ka Vyaktigat Vivaran (Personal Details)', y);
+    const col1X = margin, col2X = W/2+5;
+    field('Naam:', data.fullName, col1X, y, 14, 75); y += 7;
+    field('Pita/Pati ka Naam:', data.fatherName, col1X, y, 32, 55); y += 7;
+    field('Ling:', data.gender, col1X, y, 12, 28);
+    field('Janm Tithi:', data.dob, col1X+45, y, 22, 22);
+    field('Aayu:', data.age+' Varsh', col1X+45+50, y, 12, 20); y += 7;
+    field('Mobile Number:', data.phone, col1X, y, 28, 55); y += 7;
+    field('Aadhar Sankhya:', data.aadharNumber, col1X, y, 28, 55); y += 7;
+    field('Bank Khata Sankhya:', data.bankAccount, col1X, y, 34, 50);
+    field('IFSC Code:', data.ifscCode, col2X, y, 20, 40); y += 9;
+
+    // ===== ADDRESS =====
+    checkPage(40);
+    y = sectionTitle('4. Pata Vivaran (Address Details)', y);
+    field('Gram:', data.village, col1X, y, 12, 60);
+    field('Panchayat:', data.panchayat, col2X, y, 22, 45); y += 7;
+    field('Prakhanda:', data.block, col1X, y, 20, 55);
+    field('Jila:', data.district, col2X, y, 12, 55); y += 7;
+    field('Rajya:', data.state, col1X, y, 14, 60); y += 9;
+
+    // ===== LAND =====
+    checkPage(50);
+    y = sectionTitle('5. Bhoomi Vivaran (Land Details)', y);
+    doc.setFillColor(237, 229, 210);
+    doc.rect(margin, y, W-margin*2, 6, 'F');
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold');
+    const col = [margin, margin+50, margin+90];
+    doc.text('Bhoomi Prakar', col[0]+1, y+4);
+    doc.text('Kshetra (Acre)', col[1]+1, y+4);
+    doc.text('Swamitva', col[2]+1, y+4);
+    doc.setDrawColor(160,140,110); doc.rect(margin, y, W-margin*2, 6); y += 6;
+    doc.setFont('helvetica', 'normal');
+    doc.rect(margin, y, W-margin*2, 6);
+    doc.text('Sinchai (Irrigated)', col[0]+1, y+4);
+    doc.text(data.irrigatedArea, col[1]+1, y+4);
+    doc.text(data.irrigatedOwnership, col[2]+1, y+4); y += 6;
+    doc.rect(margin, y, W-margin*2, 6);
+    doc.text('Asinchai (Unirrigated)', col[0]+1, y+4);
+    doc.text(data.unirrigatedArea, col[1]+1, y+4);
+    doc.text(data.unirrigatedOwnership, col[2]+1, y+4); y += 9;
+
+    // ===== SHG =====
+    checkPage(20);
+    y = sectionTitle('8. Samuh / Sangathan Judav (SHG/FPO)', y);
+    field('SHG/FPO Sadasya:', data.shgMember, col1X, y, 32, 20);
+    if (data.shgMember === 'हाँ' && data.shgName) field('Naam:', data.shgName, col2X, y, 12, 55);
+    y += 9;
+
+    // ===== CROPS =====
+    checkPage(30 + data.crops.length * 7);
+    y = sectionTitle('6. Prastaavit Fasal Vivaran (Crop Details)', y);
+    doc.setFillColor(237, 229, 210);
+    doc.rect(margin, y, W-margin*2, 6, 'F');
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold');
+    const cropCols = [margin, margin+65, margin+110];
+    doc.text('Fasal ka Naam', cropCols[0]+1, y+4);
+    doc.text('Buwai Maah', cropCols[1]+1, y+4);
+    doc.text('Katai Maah', cropCols[2]+1, y+4);
+    doc.setDrawColor(160,140,110); doc.rect(margin, y, W-margin*2, 6); y += 6;
+    doc.setFont('helvetica', 'normal');
+    data.crops.forEach((crop, i) => {
+        checkPage(7);
+        doc.rect(margin, y, W-margin*2, 6);
+        doc.text(String(i+1)+'. '+(crop.name||''), cropCols[0]+1, y+4);
+        doc.text(crop.sowingMonth||'', cropCols[1]+1, y+4);
+        doc.text(crop.harvestMonth||'', cropCols[2]+1, y+4);
+        y += 6;
+    });
+    y += 4;
+
+    // ===== PREV EXP =====
+    checkPage(20);
+    y = sectionTitle('7. Poorv Anubhav (Previous Experience)', y);
+    field('Kya aapne pehle Aushadhiya Fasal ugaai hai?', data.previousMedicinal, col1X, y, 82, 20); y += 7;
+    if (data.previousMedicinal === 'हाँ' && data.prevExpDescription) {
+        doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.text('Vivaran:', col1X, y);
+        doc.setFont('helvetica', 'normal');
+        const lines = doc.splitTextToSize(data.prevExpDescription, W-margin*2-25);
+        doc.text(lines, col1X+20, y); y += lines.length*5+2;
+    }
+    y += 3;
+
+    // ===== CONSENT =====
+    checkPage(30);
+    y = sectionTitle('9. Utpadan evam Vipanan Sahmati (Consent)', y);
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal');
+    ['✔ Company ke nirdeshanusar kheti karunga/karungi','✔ Gunvatta maankon ka paalan karunga/karungi','✔ Utpada ko praathamikta se Company ko bechunga/bechungi'].forEach(line => {
+        doc.text(line, col1X+2, y); y += 5.5;
+    });
+    y += 3;
+
+    // ===== DOCUMENTS =====
+    checkPage(25);
+    y = sectionTitle('10. Aavashyak Dastavej (Required Documents)', y);
+    doc.setFontSize(8);
+    ['☐ Aadhar Card','☐ Bank Passbook','☐ Bhoomi Dastavej / Lease Agreement','☐ Kisan Photo'].forEach(item => {
+        doc.text(item, col1X+2, y); y += 5;
+    });
+    y += 4;
+
+    // ===== DECLARATION =====
+    checkPage(25);
+    y = sectionTitle('11. Ghoshana (Declaration)', y);
+    doc.setFontSize(7.5);
+    const declLines = doc.splitTextToSize('Main yah ghoshit karta/karti hun ki di gayi sabhi jaankaari satya hai. Yadi koi jaankaari galat payi jaati hai, to panjikaran nirasht kiya ja sakta hai.', W-margin*2-4);
+    doc.text(declLines, col1X+2, y); y += declLines.length*4+6;
+
+    // ===== SIGNATURES =====
+    checkPage(35);
+    y = sectionTitle('12. Hastaakshar (Signatures)', y);
+    y += 8;
+    const sigW = (W-margin*2-10)/2;
+    doc.setDrawColor(BRAND_R, BRAND_G, BRAND_B);
+    doc.rect(margin, y, sigW, 20);
+    doc.rect(margin+sigW+10, y, sigW, 20);
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'bold');
+    doc.text('Kisan Hastaakshar / Angutha Nishan', margin+sigW/2, y+25, { align:'center' });
+    doc.text('Naam: '+data.fullName, margin+2, y+23);
+    doc.text('Company Pratinidhi', margin+sigW+10+sigW/2, y+25, { align:'center' });
+    y += 32;
+
+    // ===== FOOTER BAR =====
+    checkPage(12);
+    doc.setFillColor(BRAND_R, BRAND_G, BRAND_B);
+    doc.rect(0, y, W, 10, 'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(7); doc.setFont('helvetica', 'normal');
+    doc.text(`Submitted: ${data.submittedAt} | Reg No: ${data.regNumber}`, W/2, y+6, { align:'center' });
+
+    // ===== DOCUMENT IMAGES ON SEPARATE PAGES =====
+    function addDocPage(title, imgData) {
+        doc.addPage();
+        doc.setFillColor(BRAND_R, BRAND_G, BRAND_B);
+        doc.rect(0, 0, W, 14, 'F');
+        doc.setTextColor(255,255,255); doc.setFontSize(11); doc.setFont('helvetica', 'bold');
+        doc.text(title, W/2, 9, { align:'center' });
+        doc.setTextColor(0,0,0);
+        const imgX = margin, imgY = 20, imgW = W-margin*2, imgH = 250;
+        if (imgData) {
+            try { doc.addImage(imgData, 'JPEG', imgX, imgY, imgW, imgH, undefined, 'FAST'); }
+            catch(e) {
+                doc.setFontSize(10); doc.setTextColor(120,120,120);
+                doc.text('Image could not be rendered', W/2, 145, { align:'center' });
+                doc.setTextColor(0,0,0);
+            }
+        } else {
+            doc.setDrawColor(200,200,200); doc.rect(imgX, imgY, imgW, imgH);
+            doc.setFontSize(10); doc.setTextColor(150,150,150);
+            doc.text('No document uploaded', W/2, imgY+imgH/2, { align:'center' });
+            doc.setTextColor(0,0,0);
+        }
+        doc.setFillColor(BRAND_R, BRAND_G, BRAND_B);
+        doc.rect(0, 285, W, 12, 'F');
+        doc.setTextColor(255,255,255); doc.setFontSize(7);
+        doc.text(`Aushadhiyog Pvt. Ltd. | Reg No: ${data.regNumber}`, W/2, 292, { align:'center' });
+    }
+
+    addDocPage('Aadhar Card / आधार कार्ड', data.aadhaarDoc);
+    addDocPage('Bank Passbook / बैंक पासबुक', data.passbookDoc);
+    addDocPage('Bhoomi Dastavej / भूमि दस्तावेज', data.landDoc);
+
+    return doc.output('blob');
+}
+
+// =============================================
+// DOWNLOAD PDF (for user)
+// =============================================
+async function downloadPDFPreview() {
+    try {
+        const formData = collectFormData();
+        const pdfBlob = await generatePDF(formData);
+        const url = URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Kisan_Registration_${formData.regNumber}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+    } catch (e) {
+        showNotification('PDF download mein error: ' + e.message, 'error');
+    }
+}
+
+// =============================================
+// SEND TO TELEGRAM
+// =============================================
+async function sendPDFToTelegram(pdfBlob, data) {
+    const fileName = `Kisan_Registration_${data.regNumber}.pdf`;
+    const formData = new FormData();
+    formData.append('chat_id', CONFIG.telegramChatId);
+    formData.append('document', pdfBlob, fileName);
+    formData.append('caption',
+        `🌱 *Naya Kisan Panjikaran*\n` +
+        `━━━━━━━━━━━━━━━━━━━━\n` +
+        `👤 *Naam:* ${data.fullName}\n` +
+        `📱 *Mobile:* ${data.phone}\n` +
+        `📍 *Sthan:* ${data.district}, ${data.state}\n` +
+        `🌾 *Bhoomi:* Sinchai: ${data.irrigatedArea} Acre\n` +
+        `🌿 *Fasalein:* ${data.crops.map(c => c.name).join(', ')}\n` +
+        `🪪 *Aadhar:* ${data.aadharNumber}\n` +
+        `🏦 *Bank:* ${data.bankAccount} | IFSC: ${data.ifscCode}\n` +
+        `🆔 *Reg No:* ${data.regNumber}\n` +
+        `⏰ *Samay:* ${data.submittedAt}`
+    );
+    formData.append('parse_mode', 'Markdown');
+    const response = await fetch(`https://api.telegram.org/bot${CONFIG.telegramBotToken}/sendDocument`, {
+        method: 'POST', body: formData
+    });
+    const result = await response.json();
+    if (!result.ok) {
+        console.error('Telegram error:', result);
+        showNotification('Telegram notification fail hua, lekin form jama ho gaya', 'info');
+    }
+}
+
+// =============================================
+// NOTIFICATION
+// =============================================
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    const bg = type === 'success' ? '#1b3a1a' : type === 'error' ? '#ef4444' : '#3b82f6';
+    notification.style.cssText = `position:fixed;top:1rem;right:1rem;z-index:9999;padding:1rem 1.5rem;border-radius:.5rem;box-shadow:0 4px 16px rgba(0,0,0,.2);background:${bg};color:#fff;max-width:320px;font-size:.9rem;`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    setTimeout(() => { if (document.body.contains(notification)) document.body.removeChild(notification); }, 5000);
+}
+</script>
 </body>
 </html>
