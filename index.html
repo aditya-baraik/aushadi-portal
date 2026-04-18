@@ -79,8 +79,10 @@
 <!-- Language Selection Modal -->
 <div id="langModal">
     <div style="background:#fff; border-radius:1.5rem; padding:3rem 2rem; text-align:center; max-width:420px; width:90%; box-shadow:0 25px 60px rgba(0,0,0,.3);">
-        <div style="width:64px;height:64px;background:var(--brand);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
-            <svg style="width:36px;height:36px;color:#fff;fill:none;stroke:currentColor;" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+        <div style="width:72px;height:72px;margin:0 auto 1.5rem;border-radius:50%;overflow:hidden;background:var(--brand);display:flex;align-items:center;justify-content:center;">
+            <img src="YOUR_LOGO_URL_HERE" alt="Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+            <svg style="width:36px;height:36px;color:#fff;fill:none;stroke:currentColor;display:none;" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
         </div>
         <h2 style="font-size:1.5rem;font-weight:700;color:var(--brand);margin-bottom:.5rem;">Aushadhiyog</h2>
         <p style="color:#6b7280;margin-bottom:2rem;font-size:.95rem;">भाषा चुनें / Select Language</p>
@@ -96,7 +98,10 @@
     <div class="container mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background:var(--brand);">
+                <!-- LOGO: Replace the src URL below with your actual logo image URL -->
+                <img src="YOUR_LOGO_URL_HERE" alt="Aushadhiyog Logo" class="h-12 w-12 rounded-full object-cover" style="background:var(--brand);"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div class="w-12 h-12 rounded-full items-center justify-center" style="background:var(--brand);display:none;" id="logoFallback">
                     <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
                     </svg>
@@ -111,7 +116,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                     </svg>
-                    <span class="font-medium" data-hi="हेल्पलाइन: 7250915077" data-en="Helpline: 7250915077">हेल्पलाइन: 7250915077</span>
+                    <a href="tel:+917250915077" target="_blank" class="font-medium" style="color:var(--brand);text-decoration:none;" data-hi="हेल्पलाइन: 7250915077" data-en="Helpline: 7250915077">हेल्पलाइन: 7250915077</a>
                 </div>
                 <button onclick="toggleLanguage()" style="background:var(--cream);border:2px solid var(--brand);color:var(--brand);padding:.3rem .8rem;border-radius:.5rem;font-weight:600;cursor:pointer;font-size:.8rem;" id="langToggleBtn">EN</button>
             </div>
@@ -204,13 +209,17 @@
                 </div>
             </div>
 
-            <!-- Step 2: Address Details -->
             <div class="form-step" data-step="2">
                 <h2 class="text-2xl font-bold mb-6 border-b-2 pb-3" style="color:var(--brand);border-color:#1b3a1a30;">
-                    📍 <span data-hi="पता विवरण" data-en="Address Details">पता विवरण</span>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#e53935" style="flex-shrink:0;filter:drop-shadow(0 2px 3px rgba(229,57,53,0.35));">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        </svg>
+                        <span data-hi="पता विवरण" data-en="Address Details">पता विवरण</span>
+                    </div>
                 </h2>
                 <div class="grid md:grid-cols-2 gap-6">
-                    <!-- Order: राज्य → जिला → प्रखंड → ग्राम / पंचायत -->
+                    <!-- Row 1: State | District (both dropdowns auto-fetch) -->
                     <div class="form-group">
                         <label class="form-label" data-hi="राज्य *" data-en="State *">राज्य *</label>
                         <select name="state" id="stateSelect" required class="form-input" onchange="onStateChange()">
@@ -219,27 +228,23 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label" data-hi="जिला *" data-en="District *">जिला *</label>
-                        <select name="district" id="districtSelect" required class="form-input" onchange="onDistrictChange()" disabled>
+                        <select name="district" id="districtSelect" required class="form-input" disabled>
                             <option value="" data-hi="पहले राज्य चुनें" data-en="Select state first">पहले राज्य चुनें</option>
                         </select>
                     </div>
+                    <!-- Row 2: Block | Panchayat (manual text) -->
                     <div class="form-group">
                         <label class="form-label" data-hi="प्रखंड *" data-en="Block *">प्रखंड *</label>
-                        <select name="block" id="blockSelect" required class="form-input" onchange="onBlockChange()" disabled>
-                            <option value="" data-hi="पहले जिला चुनें" data-en="Select district first">पहले जिला चुनें</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" data-hi="ग्राम *" data-en="Village *">ग्राम *</label>
-                        <select name="village" id="villageSelect" required class="form-input" disabled>
-                            <option value="" data-hi="पहले प्रखंड चुनें" data-en="Select block first">पहले प्रखंड चुनें</option>
-                        </select>
+                        <input type="text" name="block" id="blockInput" required class="form-input" data-phi="प्रखंड/ब्लॉक का नाम" data-pen="Block name" placeholder="प्रखंड/ब्लॉक का नाम">
                     </div>
                     <div class="form-group">
                         <label class="form-label" data-hi="पंचायत *" data-en="Panchayat *">पंचायत *</label>
-                        <select name="panchayat" id="panchayatSelect" required class="form-input" disabled>
-                            <option value="" data-hi="पहले प्रखंड चुनें" data-en="Select block first">पहले प्रखंड चुनें</option>
-                        </select>
+                        <input type="text" name="panchayat" id="panchayatInput" required class="form-input" data-phi="पंचायत का नाम" data-pen="Panchayat name" placeholder="पंचायत का नाम">
+                    </div>
+                    <!-- Row 3: Village full width (manual text) -->
+                    <div class="form-group md:col-span-2">
+                        <label class="form-label" data-hi="ग्राम *" data-en="Village *">ग्राम *</label>
+                        <input type="text" name="village" id="villageInput" required class="form-input" data-phi="गाँव का नाम" data-pen="Village name" placeholder="गाँव का नाम">
                     </div>
                 </div>
             </div>
@@ -474,11 +479,11 @@
         <div class="grid md:grid-cols-2 gap-4 text-sm text-gray-700">
             <div class="flex items-center space-x-2">
                 <svg class="w-5 h-5" style="color:var(--brand);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                <span>7250915077</span>
+                <a href="tel:+917250915077" target="_blank" style="color:inherit;text-decoration:none;">7250915077</a>
             </div>
             <div class="flex items-center space-x-2">
                 <svg class="w-5 h-5" style="color:var(--brand);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                <span>aushadhiyog@gmail.com</span>
+                <a href="mailto:aushadhiyog@gmail.com?subject=Query" target="_blank" style="color:inherit;text-decoration:none;">aushadhiyog@gmail.com</a>
             </div>
             <div class="flex items-center space-x-2">
                 <svg class="w-5 h-5" style="color:var(--brand);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
@@ -705,8 +710,7 @@ function populateStates() {
     sel.innerHTML = `<option value="">${isEn ? 'Select State' : 'राज्य चुनें'}</option>`;
     Object.keys(locationData).sort().forEach(state => {
         const opt = document.createElement('option');
-        opt.value = state;
-        opt.textContent = state;
+        opt.value = state; opt.textContent = state;
         sel.appendChild(opt);
     });
 }
@@ -714,19 +718,10 @@ function populateStates() {
 function onStateChange() {
     const state = document.getElementById('stateSelect').value;
     const distSel = document.getElementById('districtSelect');
-    const blockSel = document.getElementById('blockSelect');
-    const vilSel = document.getElementById('villageSelect');
-    const panSel = document.getElementById('panchayatSelect');
     const isEn = currentLang === 'en';
-
     distSel.innerHTML = `<option value="">${isEn ? 'Select District' : 'जिला चुनें'}</option>`;
-    blockSel.innerHTML = `<option value="">${isEn ? 'Select district first' : 'पहले जिला चुनें'}</option>`;
-    vilSel.innerHTML = `<option value="">${isEn ? 'Select block first' : 'पहले प्रखंड चुनें'}</option>`;
-    panSel.innerHTML = `<option value="">${isEn ? 'Select block first' : 'पहले प्रखंड चुनें'}</option>`;
-    blockSel.disabled = true; vilSel.disabled = true; panSel.disabled = true;
-
-    if (!state) { distSel.disabled = true; return; }
-    distSel.disabled = false;
+    distSel.disabled = !state;
+    if (!state) return;
     const data = locationData[state];
     if (data && data.districts) {
         Object.keys(data.districts).sort().forEach(dist => {
@@ -734,74 +729,6 @@ function onStateChange() {
             opt.value = dist; opt.textContent = dist;
             distSel.appendChild(opt);
         });
-    }
-}
-
-function onDistrictChange() {
-    const state = document.getElementById('stateSelect').value;
-    const dist = document.getElementById('districtSelect').value;
-    const blockSel = document.getElementById('blockSelect');
-    const vilSel = document.getElementById('villageSelect');
-    const panSel = document.getElementById('panchayatSelect');
-    const isEn = currentLang === 'en';
-
-    blockSel.innerHTML = `<option value="">${isEn ? 'Select Block' : 'प्रखंड चुनें'}</option>`;
-    vilSel.innerHTML = `<option value="">${isEn ? 'Select block first' : 'पहले प्रखंड चुनें'}</option>`;
-    panSel.innerHTML = `<option value="">${isEn ? 'Select block first' : 'पहले प्रखंड चुनें'}</option>`;
-    vilSel.disabled = true; panSel.disabled = true;
-
-    if (!dist) { blockSel.disabled = true; return; }
-    blockSel.disabled = false;
-
-    const distData = locationData[state] && locationData[state].districts[dist];
-    if (distData && distData.blocks) {
-        Object.keys(distData.blocks).sort().forEach(block => {
-            const opt = document.createElement('option');
-            opt.value = block; opt.textContent = block;
-            blockSel.appendChild(opt);
-        });
-    } else {
-        // Generic block placeholder for states without block data
-        const opt = document.createElement('option');
-        opt.value = dist + ' Block'; opt.textContent = dist + ' Block';
-        blockSel.appendChild(opt);
-    }
-}
-
-function onBlockChange() {
-    const state = document.getElementById('stateSelect').value;
-    const dist = document.getElementById('districtSelect').value;
-    const block = document.getElementById('blockSelect').value;
-    const vilSel = document.getElementById('villageSelect');
-    const panSel = document.getElementById('panchayatSelect');
-    const isEn = currentLang === 'en';
-
-    vilSel.innerHTML = `<option value="">${isEn ? 'Select Village' : 'ग्राम चुनें'}</option>`;
-    panSel.innerHTML = `<option value="">${isEn ? 'Select Panchayat' : 'पंचायत चुनें'}</option>`;
-
-    if (!block) { vilSel.disabled = true; panSel.disabled = true; return; }
-    vilSel.disabled = false; panSel.disabled = false;
-
-    const distData = locationData[state] && locationData[state].districts[dist];
-    if (distData && distData.blocks && distData.blocks[block]) {
-        distData.blocks[block].sort().forEach(v => {
-            const opt = document.createElement('option');
-            opt.value = v; opt.textContent = v;
-            vilSel.appendChild(opt);
-        });
-    } else {
-        const opt = document.createElement('option'); opt.value = block+' Village'; opt.textContent = block+' Village';
-        vilSel.appendChild(opt);
-    }
-    if (distData && distData.panchayats && distData.panchayats[block]) {
-        distData.panchayats[block].sort().forEach(p => {
-            const opt = document.createElement('option');
-            opt.value = p; opt.textContent = p;
-            panSel.appendChild(opt);
-        });
-    } else {
-        const opt = document.createElement('option'); opt.value = block+' Panchayat'; opt.textContent = block+' Panchayat';
-        panSel.appendChild(opt);
     }
 }
 
