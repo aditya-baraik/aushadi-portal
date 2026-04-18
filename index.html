@@ -13,13 +13,13 @@
         body { font-family: 'Inter', 'Noto Sans Devanagari', sans-serif; line-height: 1.6; }
 
         /* Progress Steps */
-        .step-indicator { display:flex; flex-direction:column; align-items:center; position:relative; flex:1; }
-        .step-circle { width:40px; height:40px; border-radius:50%; background:#e5e7eb; color:#6b7280; display:flex; align-items:center; justify-content:center; font-weight:600; transition:all .3s; z-index:2; }
+        .step-indicator { display:flex; flex-direction:column; align-items:center; position:relative; flex:1; cursor:pointer; }
+        .step-circle { width:40px; height:40px; border-radius:50%; background:#e5e7eb; color:#6b7280; display:flex; align-items:center; justify-content:center; font-weight:600; transition:all .3s; z-index:2; flex-shrink:0; }
         .step-indicator.active .step-circle { background:var(--brand); color:#fff; box-shadow:0 0 0 4px rgba(27,58,26,.2); }
         .step-indicator.completed .step-circle { background:#2d6a2c; color:#fff; }
-        .step-label { margin-top:8px; font-size:.75rem; text-align:center; color:#6b7280; max-width:100px; }
+        .step-label { margin-top:8px; font-size:.75rem; text-align:center; color:#6b7280; max-width:80px; min-height:2.5em; display:flex; align-items:flex-start; justify-content:center; }
         .step-indicator.active .step-label { color:var(--brand); font-weight:600; }
-        .progress-line { height:2px; background:#e5e7eb; flex:1; margin:0 8px; margin-top:-20px; transition:all .3s; }
+        .progress-line { height:2px; background:#e5e7eb; flex:1; margin:0 4px; margin-top:19px; transition:all .3s; align-self:auto; }
         .progress-line.active { background:var(--brand); }
 
         /* Form */
@@ -118,9 +118,9 @@
         <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <!-- LOGO: Replace the src URL below with your actual logo image URL -->
-                <img src="Logo.png" alt="Aushadhiyog Logo" class="h-12 w-12 rounded-full object-cover" style="background:var(--brand);"
+                <img src="Logo.png" alt="Aushadhiyog Logo" class="rounded-full object-cover" style="width:52px;height:52px;background:var(--brand);"
                      onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-                <div class="w-12 h-12 rounded-full items-center justify-center" style="background:var(--brand);display:none;" id="logoFallback">
+                <div class="rounded-full items-center justify-center" style="background:var(--brand);display:none;width:52px;height:52px;" id="logoFallback">
                     <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
                     </svg>
@@ -148,7 +148,7 @@
 
     <!-- Progress Bar -->
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex items-start justify-between mb-4">
             <div class="step-indicator active" data-step="1" onclick="goToStep(1)">
                 <div class="step-wrapper">
                     <div class="step-circle">1</div>
@@ -489,19 +489,22 @@
             <div class="flex justify-between mt-8 pt-6 border-t-2 border-gray-200">
                 <button type="button" id="prevBtn" class="btn-secondary" style="display:none;" data-hi="← पिछला" data-en="← Previous">← पिछला</button>
                 <div></div>
-                <div class="flex gap-3 items-center">
-                    <button type="button" id="downloadPdfBtn" class="btn-download" style="display:none;" onclick="downloadPDFPreview()" data-hi="📥 PDF डाउनलोड" data-en="📥 Download PDF">📥 PDF डाउनलोड</button>
-                    <button type="button" id="nextBtn" class="btn-primary" data-hi="अगला →" data-en="Next →">अगला →</button>
-                    <button type="submit" id="submitBtn" class="btn-submit" style="display:none;">
-                        <span id="submitText" data-hi="📤 फॉर्म जमा करें" data-en="📤 Submit Form">📤 फॉर्म जमा करें</span>
-                        <span id="submitLoader" style="display:none;">
-                            <svg class="animate-spin h-5 w-5 inline" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <span data-hi="PDF बन रही है..." data-en="Generating PDF...">PDF बन रही है...</span>
-                        </span>
-                    </button>
+                <div class="flex flex-col items-end gap-2">
+                    <div class="flex gap-3 items-center">
+                        <button type="button" id="downloadPdfBtn" class="btn-download" style="display:none;" onclick="downloadPDFPreview()" data-hi="📥 PDF डाउनलोड" data-en="📥 Download PDF">📥 PDF डाउनलोड</button>
+                        <button type="button" id="nextBtn" class="btn-primary" data-hi="अगला →" data-en="Next →">अगला →</button>
+                        <button type="submit" id="submitBtn" class="btn-submit" style="display:none;">
+                            <span id="submitText" data-hi="📤 फॉर्म जमा करें" data-en="📤 Submit Form">📤 फॉर्म जमा करें</span>
+                            <span id="submitLoader" style="display:none;">
+                                <svg class="animate-spin h-5 w-5 inline" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span data-hi="PDF बन रही है..." data-en="Generating PDF...">PDF बन रही है...</span>
+                            </span>
+                        </button>
+                    </div>
+                    <p id="submitErrorMsg" style="display:none;color:#dc2626;font-size:.85rem;font-weight:600;text-align:center;" data-hi="⚠️ कृपया फॉर्म पूरी तरह भरें" data-en="⚠️ Please fill your form completely">⚠️ कृपया फॉर्म पूरी तरह भरें</p>
                 </div>
             </div>
         </form>
@@ -517,7 +520,7 @@
             </div>
             <div class="flex items-center space-x-2">
                 <svg class="w-5 h-5" style="color:var(--brand);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                <a href="https://mail.google.com/mail/?view=cm&to=aushadhiyog@gmail.com&su=Query" target="_blank" style="color:inherit;text-decoration:none;">aushadhiyog@gmail.com</a>
+                <a href="https://mail.google.com/mail/?view=cm&to=aushadhiyog@gmail.com&su=Query" onclick="handleEmailClick(event)" target="_blank" style="color:inherit;text-decoration:none;">aushadhiyog@gmail.com</a>
             </div>
             <div class="flex items-center space-x-2">
                 <svg class="w-5 h-5" style="color:var(--brand);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
@@ -549,6 +552,21 @@
 <!-- jsPDF library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
+function handleEmailClick(e) {
+    e.preventDefault();
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isMobile) {
+        // Try Gmail app first, fallback to mailto
+        window.location.href = 'googlegmail://co?to=aushadhiyog@gmail.com&subject=Query';
+        setTimeout(() => {
+            window.location.href = 'mailto:aushadhiyog@gmail.com?subject=Query';
+        }, 1500);
+    } else {
+        // Desktop - open Gmail compose in new tab
+        window.open('https://mail.google.com/mail/?view=cm&to=aushadhiyog@gmail.com&su=Query', '_blank');
+    }
+}
+
 // =============================================
 // LANGUAGE SYSTEM
 // =============================================
@@ -879,9 +897,11 @@ function initializePrevExpToggle() {
 // =============================================
 function initializeForm() {
     document.getElementById('nextBtn').addEventListener('click', () => {
-        if (validateCurrentStep()) {
-            if (currentStep < totalSteps) { currentStep++; updateFormDisplay(); }
-        }
+        // Mark current step errors silently but always allow moving forward
+        const valid = checkStepValid(currentStep);
+        stepErrors[currentStep] = !valid;
+        updateStepDots();
+        if (currentStep < totalSteps) { currentStep++; updateFormDisplay(); }
     });
     document.getElementById('prevBtn').addEventListener('click', () => {
         if (currentStep > 1) { currentStep--; updateFormDisplay(); }
@@ -1025,24 +1045,31 @@ function initializeCropManagement() {
 async function handleFormSubmit(e) {
     e.preventDefault();
 
-    // Check all previous steps for completeness, vibrate any that are incomplete
-    let allPrevValid = true;
+    // Check all steps for completeness
+    let firstIncomplete = null;
     for (let s = 1; s <= totalSteps; s++) {
         const valid = checkStepValid(s);
         stepErrors[s] = !valid;
-        if (!valid) {
-            allPrevValid = false;
-            vibrateStep(s);
-        }
+        if (!valid && firstIncomplete === null) firstIncomplete = s;
     }
     updateStepDots();
 
-    if (!allPrevValid) {
-        showNotification(currentLang === 'en' ? 'Please complete all highlighted steps first' : 'कृपया सभी अधूरे चरण पहले पूरे करें', 'error');
+    if (firstIncomplete !== null) {
+        // Show red error message below submit button
+        const errMsg = document.getElementById('submitErrorMsg');
+        errMsg.style.display = 'block';
+        setTimeout(() => { errMsg.style.display = 'none'; }, 4000);
+        // Jump directly to first incomplete step
+        currentStep = firstIncomplete;
+        updateFormDisplay();
+        // Highlight the incomplete fields in that step
+        validateCurrentStep();
         return;
     }
 
-    if (!validateCurrentStep()) return;
+    // Hide error message if all good
+    document.getElementById('submitErrorMsg').style.display = 'none';
+
     const submitBtn = document.getElementById('submitBtn');
     const submitText = document.getElementById('submitText');
     const submitLoader = document.getElementById('submitLoader');
