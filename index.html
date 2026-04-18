@@ -17,7 +17,7 @@
         .step-circle { width:40px; height:40px; border-radius:50%; background:#e5e7eb; color:#6b7280; display:flex; align-items:center; justify-content:center; font-weight:600; transition:all .3s; z-index:2; flex-shrink:0; }
         .step-indicator.active .step-circle { background:var(--brand); color:#fff; box-shadow:0 0 0 4px rgba(27,58,26,.2); }
         .step-indicator.completed .step-circle { background:#2d6a2c; color:#fff; }
-        .step-label { margin-top:8px; font-size:.75rem; text-align:center; color:#6b7280; max-width:80px; min-height:2.5em; display:flex; align-items:flex-start; justify-content:center; }
+        .step-label { margin-top:8px; font-size:.75rem; text-align:center; color:#6b7280; max-width:80px; display:flex; align-items:flex-start; justify-content:center; white-space:nowrap; }
         .step-indicator.active .step-label { color:var(--brand); font-weight:600; }
         .progress-line { height:2px; background:#e5e7eb; flex:1; margin:0 4px; margin-top:19px; transition:all .3s; align-self:auto; }
         .progress-line.active { background:var(--brand); }
@@ -99,7 +99,7 @@
 <div id="langModal">
     <div style="background:#fff; border-radius:1.5rem; padding:3rem 2rem; text-align:center; max-width:420px; width:90%; box-shadow:0 25px 60px rgba(0,0,0,.3);">
         <div style="width:72px;height:72px;margin:0 auto 1.5rem;border-radius:50%;overflow:hidden;background:var(--brand);display:flex;align-items:center;justify-content:center;">
-            <img src="Logo.png" alt="Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
+            <img src="YOUR_LOGO_URL_HERE" alt="Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
                  onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
             <svg style="width:36px;height:36px;color:#fff;fill:none;stroke:currentColor;display:none;" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
         </div>
@@ -118,7 +118,7 @@
         <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <!-- LOGO: Replace the src URL below with your actual logo image URL -->
-                <img src="Logo.png" alt="Aushadhiyog Logo" class="rounded-full object-cover" style="width:52px;height:52px;background:var(--brand);"
+                <img src="YOUR_LOGO_URL_HERE" alt="Aushadhiyog Logo" class="rounded-full object-cover" style="width:52px;height:52px;background:var(--brand);"
                      onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                 <div class="rounded-full items-center justify-center" style="background:var(--brand);display:none;width:52px;height:52px;" id="logoFallback">
                     <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
