@@ -17,7 +17,7 @@
         .step-circle { width:40px; height:40px; border-radius:50%; background:#e5e7eb; color:#6b7280; display:flex; align-items:center; justify-content:center; font-weight:600; transition:all .3s; z-index:2; flex-shrink:0; }
         .step-indicator.active .step-circle { background:var(--brand); color:#fff; box-shadow:0 0 0 4px rgba(27,58,26,.2); }
         .step-indicator.completed .step-circle { background:#2d6a2c; color:#fff; }
-        .step-label { margin-top:8px; font-size:.75rem; text-align:center; color:#6b7280; max-width:80px; display:flex; align-items:flex-start; justify-content:center; white-space:nowrap; }
+        .step-label { margin-top:8px; font-size:.75rem; text-align:center; color:#6b7280; max-width:80px; min-height:2.5em; display:flex; align-items:flex-start; justify-content:center; }
         .step-indicator.active .step-label { color:var(--brand); font-weight:600; }
         .progress-line { height:2px; background:#e5e7eb; flex:1; margin:0 4px; margin-top:19px; transition:all .3s; align-self:auto; }
         .progress-line.active { background:var(--brand); }
@@ -357,11 +357,39 @@
                             </div>
                             <div class="form-group">
                                 <label class="form-label" data-hi="बुवाई माह *" data-en="Sowing Month *">बुवाई माह *</label>
-                                <input type="text" name="sowingMonth[]" required class="form-input" data-phi="जैसे: जून-जुलाई" data-pen="e.g. June-July" placeholder="जैसे: जून-जुलाई">
+                                <select name="sowingMonth[]" required class="form-input">
+                                    <option value="">माह चुनें / Select Month</option>
+                                    <option value="जनवरी">जनवरी (January)</option>
+                                    <option value="फरवरी">फरवरी (February)</option>
+                                    <option value="मार्च">मार्च (March)</option>
+                                    <option value="अप्रैल">अप्रैल (April)</option>
+                                    <option value="मई">मई (May)</option>
+                                    <option value="जून">जून (June)</option>
+                                    <option value="जुलाई">जुलाई (July)</option>
+                                    <option value="अगस्त">अगस्त (August)</option>
+                                    <option value="सितंबर">सितंबर (September)</option>
+                                    <option value="अक्टूबर">अक्टूबर (October)</option>
+                                    <option value="नवंबर">नवंबर (November)</option>
+                                    <option value="दिसंबर">दिसंबर (December)</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label class="form-label" data-hi="कटाई माह *" data-en="Harvest Month *">कटाई माह *</label>
-                                <input type="text" name="harvestMonth[]" required class="form-input" data-phi="जैसे: फरवरी-मार्च" data-pen="e.g. Feb-March" placeholder="जैसे: फरवरी-मार्च">
+                                <select name="harvestMonth[]" required class="form-input">
+                                    <option value="">माह चुनें / Select Month</option>
+                                    <option value="जनवरी">जनवरी (January)</option>
+                                    <option value="फरवरी">फरवरी (February)</option>
+                                    <option value="मार्च">मार्च (March)</option>
+                                    <option value="अप्रैल">अप्रैल (April)</option>
+                                    <option value="मई">मई (May)</option>
+                                    <option value="जून">जून (June)</option>
+                                    <option value="जुलाई">जुलाई (July)</option>
+                                    <option value="अगस्त">अगस्त (August)</option>
+                                    <option value="सितंबर">सितंबर (September)</option>
+                                    <option value="अक्टूबर">अक्टूबर (October)</option>
+                                    <option value="नवंबर">नवंबर (November)</option>
+                                    <option value="दिसंबर">दिसंबर (December)</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -1015,6 +1043,24 @@ function validateCurrentStep() {
 // =============================================
 // CROP MANAGEMENT
 // =============================================
+function monthSelectHTML(name) {
+    return `<select name="${name}" required class="form-input">
+                        <option value="">माह चुनें / Select Month</option>
+                        <option value="जनवरी">जनवरी (January)</option>
+                        <option value="फरवरी">फरवरी (February)</option>
+                        <option value="मार्च">मार्च (March)</option>
+                        <option value="अप्रैल">अप्रैल (April)</option>
+                        <option value="मई">मई (May)</option>
+                        <option value="जून">जून (June)</option>
+                        <option value="जुलाई">जुलाई (July)</option>
+                        <option value="अगस्त">अगस्त (August)</option>
+                        <option value="सितंबर">सितंबर (September)</option>
+                        <option value="अक्टूबर">अक्टूबर (October)</option>
+                        <option value="नवंबर">नवंबर (November)</option>
+                        <option value="दिसंबर">दिसंबर (December)</option>
+                    </select>`;
+}
+
 function initializeCropManagement() {
     document.getElementById('addCropBtn').addEventListener('click', () => {
         const cropEntry = document.createElement('div');
@@ -1028,11 +1074,11 @@ function initializeCropManagement() {
                 </div>
                 <div class="form-group">
                     <label class="form-label">बुवाई माह *</label>
-                    <input type="text" name="sowingMonth[]" required class="form-input" placeholder="जैसे: जून-जुलाई">
+                    ${monthSelectHTML('sowingMonth[]')}
                 </div>
                 <div class="form-group">
                     <label class="form-label">कटाई माह *</label>
-                    <input type="text" name="harvestMonth[]" required class="form-input" placeholder="जैसे: फरवरी-मार्च">
+                    ${monthSelectHTML('harvestMonth[]')}
                 </div>
             </div>`;
         document.getElementById('cropsContainer').appendChild(cropEntry);
@@ -1055,15 +1101,24 @@ async function handleFormSubmit(e) {
     updateStepDots();
 
     if (firstIncomplete !== null) {
-        // Show red error message below submit button
-        const errMsg = document.getElementById('submitErrorMsg');
-        errMsg.style.display = 'block';
-        setTimeout(() => { errMsg.style.display = 'none'; }, 4000);
         // Jump directly to first incomplete step
         currentStep = firstIncomplete;
         updateFormDisplay();
         // Highlight the incomplete fields in that step
         validateCurrentStep();
+        // Vibrate that step indicator
+        vibrateStep(firstIncomplete);
+        // Show notification
+        showNotification(
+            currentLang === 'en'
+                ? 'Tab ' + firstIncomplete + ' is incomplete. Please fill all required fields.'
+                : 'Tab ' + firstIncomplete + ' adhura hai. Kripya sabhi jaruri fields bharein.',
+            'error'
+        );
+        // Show error msg below submit
+        const errMsg = document.getElementById('submitErrorMsg');
+        errMsg.style.display = 'block';
+        setTimeout(() => { errMsg.style.display = 'none'; }, 4000);
         return;
     }
 
