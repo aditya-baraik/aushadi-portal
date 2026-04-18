@@ -617,7 +617,7 @@ async function generatePDF(data) {
 
     // Footer
     checkPage(12);
-    doc.setFillColor(22, 163, 74);
+    doc.setFillColor(27, 58, 26);
     doc.rect(0, y, W, 10, 'F');
     doc.setTextColor(255,255,255);
     doc.setFontSize(7);
