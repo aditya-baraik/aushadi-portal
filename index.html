@@ -357,11 +357,39 @@
                             </div>
                             <div class="form-group">
                                 <label class="form-label" data-hi="बुवाई माह *" data-en="Sowing Month *">बुवाई माह *</label>
-                                <input type="text" name="sowingMonth[]" required class="form-input" data-phi="जैसे: जून-जुलाई" data-pen="e.g. June-July" placeholder="जैसे: जून-जुलाई">
+                                <select name="sowingMonth[]" required class="form-input">
+                                    <option value="">माह चुनें / Select Month</option>
+                                    <option value="जनवरी">जनवरी (January)</option>
+                                    <option value="फरवरी">फरवरी (February)</option>
+                                    <option value="मार्च">मार्च (March)</option>
+                                    <option value="अप्रैल">अप्रैल (April)</option>
+                                    <option value="मई">मई (May)</option>
+                                    <option value="जून">जून (June)</option>
+                                    <option value="जुलाई">जुलाई (July)</option>
+                                    <option value="अगस्त">अगस्त (August)</option>
+                                    <option value="सितंबर">सितंबर (September)</option>
+                                    <option value="अक्टूबर">अक्टूबर (October)</option>
+                                    <option value="नवंबर">नवंबर (November)</option>
+                                    <option value="दिसंबर">दिसंबर (December)</option>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label class="form-label" data-hi="कटाई माह *" data-en="Harvest Month *">कटाई माह *</label>
-                                <input type="text" name="harvestMonth[]" required class="form-input" data-phi="जैसे: फरवरी-मार्च" data-pen="e.g. Feb-March" placeholder="जैसे: फरवरी-मार्च">
+                                <select name="harvestMonth[]" required class="form-input">
+                                    <option value="">माह चुनें / Select Month</option>
+                                    <option value="जनवरी">जनवरी (January)</option>
+                                    <option value="फरवरी">फरवरी (February)</option>
+                                    <option value="मार्च">मार्च (March)</option>
+                                    <option value="अप्रैल">अप्रैल (April)</option>
+                                    <option value="मई">मई (May)</option>
+                                    <option value="जून">जून (June)</option>
+                                    <option value="जुलाई">जुलाई (July)</option>
+                                    <option value="अगस्त">अगस्त (August)</option>
+                                    <option value="सितंबर">सितंबर (September)</option>
+                                    <option value="अक्टूबर">अक्टूबर (October)</option>
+                                    <option value="नवंबर">नवंबर (November)</option>
+                                    <option value="दिसंबर">दिसंबर (December)</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -485,11 +513,6 @@
                 </div>
             </div>
 
-            <!-- Submit Error Banner -->
-            <div id="submitErrorMsg" style="display:none;background:#fef2f2;border:2px solid #dc2626;border-radius:.5rem;padding:.75rem 1rem;margin-bottom:1rem;text-align:center;">
-                <p style="color:#dc2626;font-weight:700;font-size:.9rem;">⚠️ Please fill your form completely.</p>
-            </div>
-
             <!-- Navigation Buttons -->
             <div class="flex justify-between mt-8 pt-6 border-t-2 border-gray-200">
                 <button type="button" id="prevBtn" class="btn-secondary" style="display:none;" data-hi="← पिछला" data-en="← Previous">← पिछला</button>
@@ -509,9 +532,9 @@
                             </span>
                         </button>
                     </div>
-
                 </div>
             </div>
+            <p id="submitErrorMsg" style="display:none;color:#dc2626;font-size:1rem;font-weight:700;text-align:right;margin-top:.75rem;padding:.5rem 0;">⚠️ Please fill your form completely.</p>
         </form>
     </div>
 
@@ -946,19 +969,14 @@ function updateFormDisplay() {
 }
 
 function updateStepDots() {
-    let anyError = false;
     document.querySelectorAll('.step-indicator').forEach((indicator) => {
         const stepNum = parseInt(indicator.dataset.step);
         if (stepErrors[stepNum] && stepNum !== currentStep) {
             indicator.classList.add('has-error');
-            anyError = true;
         } else {
             indicator.classList.remove('has-error');
         }
     });
-    // Auto-hide error banner when all tabs are clean
-    const banner = document.getElementById('submitErrorMsg');
-    if (banner && !anyError) banner.style.display = 'none';
 }
 
 function checkStepValid(stepNum) {
@@ -1025,6 +1043,24 @@ function validateCurrentStep() {
 // =============================================
 // CROP MANAGEMENT
 // =============================================
+function monthSelectHTML(name) {
+    return `<select name="${name}" required class="form-input">
+                        <option value="">माह चुनें / Select Month</option>
+                        <option value="जनवरी">जनवरी (January)</option>
+                        <option value="फरवरी">फरवरी (February)</option>
+                        <option value="मार्च">मार्च (March)</option>
+                        <option value="अप्रैल">अप्रैल (April)</option>
+                        <option value="मई">मई (May)</option>
+                        <option value="जून">जून (June)</option>
+                        <option value="जुलाई">जुलाई (July)</option>
+                        <option value="अगस्त">अगस्त (August)</option>
+                        <option value="सितंबर">सितंबर (September)</option>
+                        <option value="अक्टूबर">अक्टूबर (October)</option>
+                        <option value="नवंबर">नवंबर (November)</option>
+                        <option value="दिसंबर">दिसंबर (December)</option>
+                    </select>`;
+}
+
 function initializeCropManagement() {
     document.getElementById('addCropBtn').addEventListener('click', () => {
         const cropEntry = document.createElement('div');
@@ -1038,11 +1074,11 @@ function initializeCropManagement() {
                 </div>
                 <div class="form-group">
                     <label class="form-label">बुवाई माह *</label>
-                    <input type="text" name="sowingMonth[]" required class="form-input" placeholder="जैसे: जून-जुलाई">
+                    ${monthSelectHTML('sowingMonth[]')}
                 </div>
                 <div class="form-group">
                     <label class="form-label">कटाई माह *</label>
-                    <input type="text" name="harvestMonth[]" required class="form-input" placeholder="जैसे: फरवरी-मार्च">
+                    ${monthSelectHTML('harvestMonth[]')}
                 </div>
             </div>`;
         document.getElementById('cropsContainer').appendChild(cropEntry);
@@ -1065,19 +1101,27 @@ async function handleFormSubmit(e) {
     updateStepDots();
 
     if (firstIncomplete !== null) {
-        // Show permanent error banner
-        document.getElementById('submitErrorMsg').style.display = 'block';
         // Jump directly to first incomplete step
         currentStep = firstIncomplete;
         updateFormDisplay();
         // Highlight the incomplete fields in that step
         validateCurrentStep();
-        // Vibrate the step indicator
+        // Vibrate that step indicator
         vibrateStep(firstIncomplete);
+        // Show notification
+        showNotification(
+            currentLang === 'en'
+                ? 'Tab ' + firstIncomplete + ' is incomplete. Please fill all required fields.'
+                : 'Tab ' + firstIncomplete + ' adhura hai. Kripya sabhi jaruri fields bharein.',
+            'error'
+        );
+        // Show error msg below submit
+        const errMsg = document.getElementById('submitErrorMsg');
+        errMsg.style.display = 'block';
         return;
     }
 
-    // All steps complete — hide error banner
+    // Hide error message if all good
     document.getElementById('submitErrorMsg').style.display = 'none';
 
     const submitBtn = document.getElementById('submitBtn');
