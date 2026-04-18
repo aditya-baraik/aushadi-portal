@@ -149,6 +149,7 @@ function updateFormDisplay() {
     document.getElementById('prevBtn').style.display = currentStep === 1 ? 'none' : 'block';
     document.getElementById('nextBtn').style.display = currentStep === totalSteps ? 'none' : 'block';
     document.getElementById('submitBtn').style.display = currentStep === totalSteps ? 'block' : 'none';
+    document.getElementById('downloadPdfBtn').style.display = currentStep === totalSteps ? 'block' : 'none';
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -231,10 +232,48 @@ function initializeCropManagement() {
 // FORM SUBMIT HANDLER
 // ==========================================
 
+// Validates a specific step (1-5) without showing step-specific notifications
+function validateStep(stepNum) {
+    const stepEl = document.querySelector(`.form-step[data-step="${stepNum}"]`);
+    if (!stepEl) return true;
+    const inputs = stepEl.querySelectorAll('input[required], select[required], textarea[required]');
+    let isValid = true;
+    inputs.forEach(input => {
+        if (input.type === 'checkbox') {
+            if (!input.checked) isValid = false;
+        } else if (!input.value.trim()) {
+            isValid = false;
+        }
+    });
+    // Step 5 also needs photo
+    if (stepNum === 5 && !photoDataUrl) isValid = false;
+    return isValid;
+}
+
 async function handleFormSubmit(e) {
     e.preventDefault();
 
-    if (!validateCurrentStep()) return;
+    // Validate ALL steps 1-5 before submitting
+    for (let s = 1; s <= totalSteps; s++) {
+        if (!validateStep(s)) {
+            // Mark the step indicator with error dot
+            const indicator = document.querySelector(`.step-indicator[data-step="${s}"]`);
+            if (indicator) {
+                indicator.classList.add('has-error', 'vibrating');
+                setTimeout(() => indicator.classList.remove('vibrating'), 600);
+            }
+            // Navigate to that incomplete step
+            currentStep = s;
+            updateFormDisplay();
+            // Run validateCurrentStep to highlight missing fields
+            validateCurrentStep();
+            showNotification(
+                `Tab ${s} mein kuch fields adhuri hain. Pehle unhe poora karein.`,
+                'error'
+            );
+            return;
+        }
+    }
 
     const submitBtn = document.getElementById('submitBtn');
     const submitText = document.getElementById('submitText');
