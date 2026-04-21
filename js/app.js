@@ -1,59 +1,58 @@
 // ==========================================
-// CONFIGURATION - YE VALUES CHANGE KARNA
+// CONFIGURATION
 // ==========================================
-
 const CONFIG = {
-    // Telegram Bot Settings (Create bot: https://t.me/BotFather)
-    telegramBotToken: '8596686665:AAHwdJoL70SUHNZMDNi1lwRocCAEYigJwuU',       // Replace with your bot token
-    telegramChatId: '-1003880115435'            // Replace with your chat ID
+    telegramBotToken: '8596686665:AAHwdJoL70SUHNZMDNi1lwRocCAEYigJwuU',
+    telegramChatId: '-1003880115435'
 };
 
 // ==========================================
 // GLOBAL VARIABLES
 // ==========================================
-
 let currentStep = 1;
-const totalSteps = 5;
-let photoDataUrl = null; // Stores base64 photo
+const totalSteps = 4;
+let photoDataUrl = null;
 
 // ==========================================
 // INITIALIZATION
 // ==========================================
-
 document.addEventListener('DOMContentLoaded', function() {
     initializeForm();
     initializeCropManagement();
     initializePhotoUpload();
     initializeDOBAutoAge();
     initializePrevExpToggle();
+    // Attach real-time dot update on all inputs
+    document.getElementById('registrationForm').addEventListener('change', function() {
+        checkAllStepsDots();
+    });
+    document.getElementById('registrationForm').addEventListener('input', function() {
+        checkAllStepsDots();
+    });
 });
 
 // ==========================================
-// PHOTO UPLOAD (Local, max 500KB)
+// PHOTO UPLOAD
 // ==========================================
-
 function initializePhotoUpload() {
     const area = document.getElementById('photoUploadArea');
     const input = document.getElementById('photoInput');
-
     area.addEventListener('click', () => input.click());
-
     input.addEventListener('change', function() {
         const file = this.files[0];
         if (!file) return;
-
         if (file.size > 500 * 1024) {
             showNotification('फोटो का आकार 500KB से अधिक नहीं होना चाहिए', 'error');
             this.value = '';
             return;
         }
-
         const reader = new FileReader();
         reader.onload = function(e) {
             photoDataUrl = e.target.result;
             document.getElementById('photoPreview').src = photoDataUrl;
             document.getElementById('photoPreviewBox').style.display = 'block';
             document.getElementById('photoUploadArea').style.display = 'none';
+            checkAllStepsDots();
         };
         reader.readAsDataURL(file);
     });
@@ -64,16 +63,15 @@ function clearPhoto() {
     document.getElementById('photoInput').value = '';
     document.getElementById('photoPreviewBox').style.display = 'none';
     document.getElementById('photoUploadArea').style.display = 'block';
+    checkAllStepsDots();
 }
 
 // ==========================================
 // DOB → AUTO AGE
 // ==========================================
-
 function initializeDOBAutoAge() {
     const dobInput = document.querySelector('input[name="dob"]');
     const ageInput = document.querySelector('input[name="age"]');
-
     if (dobInput && ageInput) {
         dobInput.addEventListener('change', function() {
             const dob = new Date(this.value);
@@ -89,7 +87,6 @@ function initializeDOBAutoAge() {
 // ==========================================
 // PREV EXP TOGGLE
 // ==========================================
-
 function initializePrevExpToggle() {
     const sel = document.querySelector('select[name="previousMedicinal"]');
     if (sel) {
@@ -103,18 +100,19 @@ function initializePrevExpToggle() {
 // ==========================================
 // FORM STEP NAVIGATION
 // ==========================================
-
 function initializeForm() {
+    // NEXT: always proceeds, just checks dots
     document.getElementById('nextBtn').addEventListener('click', () => {
-        if (validateCurrentStep()) {
-            if (currentStep < totalSteps) {
-                currentStep++;
-                updateFormDisplay();
-            }
+        checkStepCompleteness(currentStep);
+        if (currentStep < totalSteps) {
+            currentStep++;
+            updateFormDisplay();
         }
     });
 
+    // PREV: always goes back
     document.getElementById('prevBtn').addEventListener('click', () => {
+        checkStepCompleteness(currentStep);
         if (currentStep > 1) {
             currentStep--;
             updateFormDisplay();
@@ -122,6 +120,7 @@ function initializeForm() {
     });
 
     document.getElementById('registrationForm').addEventListener('submit', handleFormSubmit);
+    updateFormDisplay();
 }
 
 function updateFormDisplay() {
@@ -152,527 +151,409 @@ function updateFormDisplay() {
     document.getElementById('downloadPdfBtn').style.display = currentStep === totalSteps ? 'block' : 'none';
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Update dots after navigation
+    setTimeout(checkAllStepsDots, 50);
 }
 
-function validateCurrentStep() {
-    const currentStepEl = document.querySelector(`.form-step[data-step="${currentStep}"]`);
-    const inputs = currentStepEl.querySelectorAll('input[required], select[required], textarea[required]');
-    let isValid = true;
+// ==========================================
+// STEP COMPLETENESS CHECK → RED DOT
+// ==========================================
+function checkStepCompleteness(stepNum) {
+    const stepEl = document.querySelector(`.form-step[data-step="${stepNum}"]`);
+    const wrapper = document.getElementById(`sw-${stepNum}`);
+    if (!stepEl || !wrapper) return;
 
-    inputs.forEach(input => {
-        if (input.type === 'checkbox') {
-            if (!input.checked) {
-                isValid = false;
-                input.parentElement.style.color = '#ef4444';
-            } else {
-                input.parentElement.style.color = '';
-            }
-            return;
-        }
-        if (!input.value.trim()) {
-            isValid = false;
-            input.classList.add('border-red-500');
-            if (!input.nextElementSibling || !input.nextElementSibling.classList.contains('error-message')) {
-                const error = document.createElement('p');
-                error.className = 'error-message text-red-500 text-sm mt-1';
-                error.textContent = 'यह फील्ड आवश्यक है';
-                input.parentNode.insertBefore(error, input.nextSibling);
-            }
-        } else {
-            input.classList.remove('border-red-500');
-            const errorMsg = input.nextElementSibling;
-            if (errorMsg && errorMsg.classList.contains('error-message')) errorMsg.remove();
-        }
+    const inputs = stepEl.querySelectorAll('input[required], select[required], textarea[required]');
+    let hasEmpty = false;
+    inputs.forEach(inp => {
+        if (inp.type === 'checkbox') { if (!inp.checked) hasEmpty = true; return; }
+        if (!inp.value.trim()) hasEmpty = true;
     });
+    if (stepNum === 4 && !photoDataUrl) hasEmpty = true;
 
-    // Step 5: photo required
-    if (currentStep === 5) {
-        if (!photoDataUrl) {
-            isValid = false;
-            showNotification('कृपया पासपोर्ट साइज फोटो अपलोड करें', 'error');
-        }
+    wrapper.querySelector('.step-dot').style.display = hasEmpty ? 'block' : 'none';
+}
+
+function checkAllStepsDots() {
+    for (let i = 1; i <= totalSteps; i++) checkStepCompleteness(i);
+}
+
+// ==========================================
+// VALIDATE ALL STEPS FOR SUBMIT
+// ==========================================
+function validateAllSteps() {
+    let allValid = true;
+    for (let stepNum = 1; stepNum <= totalSteps; stepNum++) {
+        const stepEl = document.querySelector(`.form-step[data-step="${stepNum}"]`);
+        if (!stepEl) continue;
+        const inputs = stepEl.querySelectorAll('input[required], select[required], textarea[required]');
+        inputs.forEach(inp => {
+            if (inp.type === 'checkbox') { if (!inp.checked) allValid = false; return; }
+            if (!inp.value.trim()) {
+                allValid = false;
+                inp.classList.add('border-red-500');
+            } else {
+                inp.classList.remove('border-red-500');
+            }
+        });
+        if (stepNum === 4 && !photoDataUrl) allValid = false;
     }
-
-    if (!isValid && currentStep !== 5) {
-        showNotification('कृपया सभी आवश्यक फील्ड भरें', 'error');
-    }
-
-    return isValid;
+    checkAllStepsDots();
+    return allValid;
 }
 
 // ==========================================
 // CROP MANAGEMENT
 // ==========================================
-
 function initializeCropManagement() {
     document.getElementById('addCropBtn').addEventListener('click', () => {
         const cropEntry = document.createElement('div');
-        cropEntry.className = 'crop-entry bg-gray-50 rounded-lg p-4 mb-4';
+        cropEntry.className = 'crop-entry bg-gray-50 rounded-xl p-4 mb-4';
         cropEntry.innerHTML = `
-            <button type="button" class="remove-crop" onclick="this.parentElement.remove()">×</button>
+            <button type="button" class="remove-crop" onclick="this.parentElement.remove(); checkAllStepsDots();">×</button>
             <div class="grid md:grid-cols-3 gap-4">
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom:0;">
                     <label class="form-label">फसल का नाम *</label>
                     <input type="text" name="cropName[]" required class="form-input" placeholder="जैसे: अश्वगंधा">
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom:0;">
                     <label class="form-label">बुवाई माह *</label>
-                    <input type="text" name="sowingMonth[]" required class="form-input" placeholder="जैसे: जून-जुलाई">
+                    <select name="cropSowing[]" required class="form-input">
+                        <option value="">माह चुनें</option>
+                        <option value="जनवरी">जनवरी / January</option>
+                        <option value="फरवरी">फरवरी / February</option>
+                        <option value="मार्च">मार्च / March</option>
+                        <option value="अप्रैल">अप्रैल / April</option>
+                        <option value="मई">मई / May</option>
+                        <option value="जून">जून / June</option>
+                        <option value="जुलाई">जुलाई / July</option>
+                        <option value="अगस्त">अगस्त / August</option>
+                        <option value="सितंबर">सितंबर / September</option>
+                        <option value="अक्टूबर">अक्टूबर / October</option>
+                        <option value="नवंबर">नवंबर / November</option>
+                        <option value="दिसंबर">दिसंबर / December</option>
+                    </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom:0;">
                     <label class="form-label">कटाई माह *</label>
-                    <input type="text" name="harvestMonth[]" required class="form-input" placeholder="जैसे: फरवरी-मार्च">
+                    <select name="cropHarvest[]" required class="form-input">
+                        <option value="">माह चुनें</option>
+                        <option value="जनवरी">जनवरी / January</option>
+                        <option value="फरवरी">फरवरी / February</option>
+                        <option value="मार्च">मार्च / March</option>
+                        <option value="अप्रैल">अप्रैल / April</option>
+                        <option value="मई">मई / May</option>
+                        <option value="जून">जून / June</option>
+                        <option value="जुलाई">जुलाई / July</option>
+                        <option value="अगस्त">अगस्त / August</option>
+                        <option value="सितंबर">सितंबर / September</option>
+                        <option value="अक्टूबर">अक्टूबर / October</option>
+                        <option value="नवंबर">नवंबर / November</option>
+                        <option value="दिसंबर">दिसंबर / December</option>
+                    </select>
                 </div>
-            </div>`;
+            </div>
+        `;
         document.getElementById('cropsContainer').appendChild(cropEntry);
     });
 }
 
 // ==========================================
-// FORM SUBMIT HANDLER
+// COLLECT FORM DATA
 // ==========================================
+function collectFormData() {
+    const form = document.getElementById('registrationForm');
+    const formData = new FormData(form);
 
-// Validates a specific step (1-5) without showing step-specific notifications
-function validateStep(stepNum) {
-    const stepEl = document.querySelector(`.form-step[data-step="${stepNum}"]`);
-    if (!stepEl) return true;
-    const inputs = stepEl.querySelectorAll('input[required], select[required], textarea[required]');
-    let isValid = true;
-    inputs.forEach(input => {
-        if (input.type === 'checkbox') {
-            if (!input.checked) isValid = false;
-        } else if (!input.value.trim()) {
-            isValid = false;
-        }
+    const cropNames = formData.getAll('cropName[]');
+    const cropSowing = formData.getAll('cropSowing[]');
+    const cropHarvest = formData.getAll('cropHarvest[]');
+    const crops = cropNames.map((name, i) => ({
+        name: name,
+        sowingMonth: cropSowing[i] || '',
+        harvestMonth: cropHarvest[i] || ''
+    }));
+
+    const regNumber = 'KR' + Date.now().toString().slice(-8);
+    const now = new Date();
+    const submittedAt = now.toLocaleString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
     });
-    // Step 5 also needs photo
-    if (stepNum === 5 && !photoDataUrl) isValid = false;
-    return isValid;
+
+    return {
+        fullName: formData.get('fullName') || '',
+        fatherName: formData.get('fatherName') || '',
+        dob: formData.get('dob') || '',
+        age: formData.get('age') || '',
+        gender: formData.get('gender') || '',
+        phone: formData.get('phone') || '',
+        altPhone: formData.get('altPhone') || '',
+        village: formData.get('village') || '',
+        panchayat: formData.get('panchayat') || '',
+        block: formData.get('block') || '',
+        district: formData.get('district') || '',
+        state: formData.get('state') || '',
+        pincode: formData.get('pincode') || '',
+        irrigatedArea: formData.get('irrigatedArea') || '0',
+        irrigatedOwnership: formData.get('irrigatedOwnership') || '',
+        unirrigatedArea: formData.get('unirrigatedArea') || '0',
+        unirrigatedOwnership: formData.get('unirrigatedOwnership') || '',
+        shgMember: formData.get('shgMember') || '',
+        shgName: formData.get('shgName') || '',
+        crops: crops,
+        previousMedicinal: formData.get('previousMedicinal') || '',
+        prevExpDescription: formData.get('prevExpDescription') || '',
+        photo: photoDataUrl,
+        regNumber: regNumber,
+        submittedAt: submittedAt
+    };
 }
 
+// ==========================================
+// FORM SUBMISSION — validates ALL steps
+// ==========================================
 async function handleFormSubmit(e) {
     e.preventDefault();
 
-    // Validate ALL steps 1-5 before submitting
-    for (let s = 1; s <= totalSteps; s++) {
-        if (!validateStep(s)) {
-            // Mark the step indicator with error dot
-            const indicator = document.querySelector(`.step-indicator[data-step="${s}"]`);
-            if (indicator) {
-                indicator.classList.add('has-error', 'vibrating');
-                setTimeout(() => indicator.classList.remove('vibrating'), 600);
-            }
-            // Navigate to that incomplete step
-            currentStep = s;
-            updateFormDisplay();
-            // Run validateCurrentStep to highlight missing fields
-            validateCurrentStep();
-            showNotification(
-                `Tab ${s} mein kuch fields adhuri hain. Pehle unhe poora karein.`,
-                'error'
-            );
-            return;
+    if (!validateAllSteps()) {
+        showNotification('कृपया सभी टैब के * आवश्यक फील्ड भरें', 'error');
+        // Go to first incomplete step
+        for (let i = 1; i <= totalSteps; i++) {
+            const stepEl = document.querySelector(`.form-step[data-step="${i}"]`);
+            const inputs = stepEl.querySelectorAll('input[required], select[required], textarea[required]');
+            let incomplete = false;
+            inputs.forEach(inp => {
+                if (inp.type === 'checkbox') { if (!inp.checked) incomplete = true; return; }
+                if (!inp.value.trim()) incomplete = true;
+            });
+            if (i === 4 && !photoDataUrl) incomplete = true;
+            if (incomplete) { currentStep = i; updateFormDisplay(); break; }
         }
+        return;
+    }
+
+    if (!photoDataUrl) {
+        showNotification('कृपया पासपोर्ट साइज फोटो अपलोड करें', 'error');
+        return;
     }
 
     const submitBtn = document.getElementById('submitBtn');
-    const submitText = document.getElementById('submitText');
-    const submitLoader = document.getElementById('submitLoader');
-
     submitBtn.disabled = true;
-    submitText.style.display = 'none';
-    submitLoader.style.display = 'inline';
+    submitBtn.innerHTML = '<span class="animate-spin inline-block mr-2">⏳</span> जमा हो रहा है...';
 
     try {
         const formData = collectFormData();
         const pdfBlob = await generatePDF(formData);
         await sendPDFToTelegram(pdfBlob, formData);
-        window.location.href = 'success.html';
+        showNotification('✅ पंजीकरण सफलतापूर्वक जमा हो गया!', 'success');
+        setTimeout(() => { window.location.reload(); }, 2500);
     } catch (error) {
         console.error('Submission error:', error);
-        showNotification('फॉर्म जमा करने में त्रुटि हुई। कृपया पुनः प्रयास करें। ' + error.message, 'error');
+        showNotification('❌ त्रुटि: ' + error.message, 'error');
         submitBtn.disabled = false;
-        submitText.style.display = 'inline';
-        submitLoader.style.display = 'none';
+        submitBtn.innerHTML = currentLang === 'hi' ? '🚀 पंजीकरण जमा करें' : '🚀 Submit Registration';
     }
 }
 
 // ==========================================
-// COLLECT FORM DATA
+// PDF GENERATION
 // ==========================================
-
-function collectFormData() {
-    const fd = new FormData(document.getElementById('registrationForm'));
-
-    const cropNames = fd.getAll('cropName[]');
-    const sowingMonths = fd.getAll('sowingMonth[]');
-    const harvestMonths = fd.getAll('harvestMonth[]');
-    const crops = cropNames.map((name, i) => ({
-        name,
-        sowingMonth: sowingMonths[i] || '',
-        harvestMonth: harvestMonths[i] || ''
-    }));
-
-    const today = new Date();
-    const regDate = `${String(today.getDate()).padStart(2,'0')} / ${String(today.getMonth()+1).padStart(2,'0')} / ${today.getFullYear()}`;
-
-    return {
-        regNumber: generateRegNumber(),
-        regDate,
-        fullName: fd.get('fullName') || '',
-        fatherName: fd.get('fatherName') || '',
-        gender: fd.get('gender') || '',
-        dob: fd.get('dob') ? formatDate(fd.get('dob')) : '',
-        age: fd.get('age') || '',
-        phone: fd.get('phone') || '',
-        aadharNumber: fd.get('aadharNumber') || '',
-        bankAccount: fd.get('bankAccount') || '',
-        ifscCode: fd.get('ifscCode') || '',
-        village: fd.get('village') || '',
-        panchayat: fd.get('panchayat') || '',
-        block: fd.get('block') || '',
-        district: fd.get('district') || '',
-        state: fd.get('state') || '',
-        irrigatedArea: fd.get('irrigatedArea') || '0',
-        irrigatedOwnership: fd.get('irrigatedOwnership') || '',
-        unirrigatedArea: fd.get('unirrigatedArea') || '0',
-        unirrigatedOwnership: fd.get('unirrigatedOwnership') || 'लागू नहीं',
-        shgMember: fd.get('shgMember') || '',
-        shgName: fd.get('shgName') || '',
-        crops,
-        previousMedicinal: fd.get('previousMedicinal') || '',
-        prevExpDescription: fd.get('prevExpDescription') || '',
-        photo: photoDataUrl,
-        submittedAt: new Date().toLocaleString('hi-IN', { timeZone: 'Asia/Kolkata' })
-    };
-}
-
-function generateRegNumber() {
-    const now = new Date();
-    return `AY${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-}
-
-function formatDate(dateStr) {
-    if (!dateStr) return '';
-    const [y, m, d] = dateStr.split('-');
-    return `${d}/${m}/${y}`;
-}
-
-// ==========================================
-// PDF GENERATION (matching form format)
-// ==========================================
-
 async function generatePDF(data) {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const W = 210;
+    const margin = 12;
+    let y = 20;
+    const BRAND_R = 27, BRAND_G = 58, BRAND_B = 26;
 
-    const W = 210; // page width
-    const margin = 15;
-    let y = 15;
-
-    // ---- Helper functions ----
-    function addLine(yPos) {
-        doc.setDrawColor(180, 180, 180);
-        doc.line(margin, yPos, W - margin, yPos);
+    function checkPage(requiredSpace) {
+        if (y + requiredSpace > 280) { doc.addPage(); y = 20; }
     }
-
-    function sectionTitle(text, yPos) {
-        doc.setFillColor(22, 163, 74);
-        doc.rect(margin, yPos, W - margin*2, 7, 'F');
+    function sectionTitle(title, currentY) {
+        checkPage(12);
+        doc.setFillColor(BRAND_R, BRAND_G, BRAND_B);
+        doc.rect(margin, currentY, W - margin * 2, 8, 'F');
         doc.setTextColor(255, 255, 255);
-        doc.setFontSize(9);
+        doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
-        doc.text(text, margin + 3, yPos + 5);
+        doc.text(title, margin + 2, currentY + 5.5);
         doc.setTextColor(0, 0, 0);
-        return yPos + 10;
+        return currentY + 12;
     }
-
-    function field(label, value, xL, yF, wL, wV) {
+    function field(label, value, x, currentY, labelWidth = 30, valueWidth = 50) {
         doc.setFontSize(8);
         doc.setFont('helvetica', 'bold');
-        doc.text(label, xL, yF);
+        doc.text(label, x, currentY);
         doc.setFont('helvetica', 'normal');
-        const valX = xL + wL + 1;
-        doc.text(String(value || ''), valX, yF, { maxWidth: wV });
-        doc.setDrawColor(180,180,180);
-        doc.line(valX, yF + 0.5, valX + wV, yF + 0.5);
+        const textValue = String(value || '');
+        const wrapped = doc.splitTextToSize(textValue, valueWidth);
+        doc.text(wrapped, x + labelWidth, currentY);
+        return currentY;
     }
 
-    function checkPage(neededSpace) {
-        if (y + neededSpace > 270) {
-            doc.addPage();
-            y = 15;
-        }
-    }
-
-    // ===== HEADER =====
-    // Green top bar
-    doc.setFillColor(22, 163, 74);
-    doc.rect(0, 0, W, 18, 'F');
-    doc.setTextColor(255,255,255);
-    doc.setFontSize(13);
+    // HEADER
+    doc.setFillColor(BRAND_R, BRAND_G, BRAND_B);
+    doc.rect(0, 0, W, 20, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.text('Aushadhiyog Pvt. Ltd.', W/2, 7, { align: 'center' });
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'normal');
-    doc.text('E-mail: aushadhiyog@gmail.com | Contact: 7250915077 | NH-23, Palkoat Road, Gumla', W/2, 13, { align: 'center' });
-    doc.setTextColor(0,0,0);
+    doc.text('AUSHADHIYOG PRIVATE LIMITED', W / 2, 9, { align: 'center' });
+    doc.setFontSize(10);
+    doc.text('Kisan Panjikaran Prapattra', W / 2, 15, { align: 'center' });
+    doc.setTextColor(0, 0, 0);
 
-    y = 22;
-
-    // Form title
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(22, 80, 22);
-    doc.text('KISAN PANJIKARAN PRAPATRA', W/2, y, { align: 'center' });
-    doc.setFontSize(9);
-    doc.setTextColor(80,80,80);
-    doc.text('(Aushadhiya evam Sugandhi Fasal - Anubandhi Kheti Hetu)', W/2, y+5, { align: 'center' });
-    doc.setTextColor(0,0,0);
-    y += 12;
-
-    addLine(y); y += 4;
-
-    // Reg number & date — with photo box on right
-    const photoBoxX = W - margin - 28;
-    const photoBoxY = y;
-    const photoBoxW = 28;
-    const photoBoxH = 36;
-
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Panjikaran Sankhya:', margin, y + 4);
-    doc.setFont('helvetica', 'normal');
-    doc.text(data.regNumber, margin + 32, y + 4);
-
-    doc.setFont('helvetica', 'bold');
-    doc.text('Panjikaran Tithi:', margin, y + 10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(data.regDate, margin + 28, y + 10);
-
-    // Passport photo box
-    doc.setDrawColor(100,100,100);
-    doc.setLineWidth(0.5);
-    doc.rect(photoBoxX, photoBoxY, photoBoxW, photoBoxH);
     if (data.photo) {
-        try {
-            doc.addImage(data.photo, 'JPEG', photoBoxX + 0.5, photoBoxY + 0.5, photoBoxW - 1, photoBoxH - 1);
-        } catch(e) {
-            doc.setFontSize(7);
-            doc.setTextColor(150,150,150);
-            doc.text('Photo', photoBoxX + photoBoxW/2, photoBoxY + photoBoxH/2, { align: 'center' });
-            doc.setTextColor(0,0,0);
-        }
-    } else {
-        doc.setFontSize(7);
-        doc.setTextColor(150,150,150);
-        doc.text('Passport', photoBoxX + photoBoxW/2, photoBoxY + photoBoxH/2 - 2, { align: 'center' });
-        doc.text('Photo', photoBoxX + photoBoxW/2, photoBoxY + photoBoxH/2 + 3, { align: 'center' });
-        doc.setTextColor(0,0,0);
+        try { doc.addImage(data.photo, 'JPEG', W - margin - 30, 25, 25, 30, undefined, 'FAST'); }
+        catch (e) { console.error('Photo error:', e); }
     }
-    doc.setFontSize(7);
-    doc.text('Passport Size Photo', photoBoxX + photoBoxW/2, photoBoxY + photoBoxH + 4, { align: 'center' });
 
-    y += photoBoxH + 8;
+    // SECTION 1: Personal Info
+    y = sectionTitle('1. Vyaktigat Jaankaari (Personal Information)', y);
+    const col1X = margin + 2;
+    const col2X = margin + 2 + 90;
+    field('Poora Naam:', data.fullName, col1X, y, 28, 55); y += 7;
+    field('Pita/Pati ka Naam:', data.fatherName, col1X, y, 35, 48); y += 7;
+    field('Janm Tithi:', data.dob, col1X, y, 22, 30);
+    field('Aayu:', data.age + ' varsh', col2X, y, 12, 20); y += 7;
+    field('Ling:', data.gender, col1X, y, 12, 30);
+    field('Mobile:', data.phone, col2X, y, 16, 40); y += 7;
+    if (data.altPhone) { field('Alt Mobile:', data.altPhone, col1X, y, 22, 40); y += 7; }
+    y += 3;
 
-    // ===== SECTION 1: Personal Details =====
-    y = sectionTitle('3. Kisan ka Vyaktigat Vivaran (Personal Details)', y);
-
-    const col1X = margin;
-    const col2X = W/2 + 5;
-    const labelW = 28;
-    const valW = 60;
-
-    // Row 1
-    field('Naam:', data.fullName, col1X, y, labelW, valW);
-    y += 7;
-    field('Pita/Pati ka Naam:', data.fatherName, col1X, y, labelW, valW);
-    y += 7;
-
-    // Row 2 - Gender, DOB, Age in one row
-    field('Ling:', data.gender, col1X, y, 12, 28);
-    field('Janm Tithi:', data.dob, col1X + 45, y, 20, 25);
-    field('Aayu:', data.age + ' Varsh', col1X + 45 + 50, y, 12, 20);
-    y += 7;
-
-    field('Mobile Number:', data.phone, col1X, y, labelW, valW);
-    y += 7;
-    field('Aadhar Sankhya:', data.aadharNumber, col1X, y, labelW, valW);
-    y += 7;
-    field('Bank Khata Sankhya:', data.bankAccount, col1X, y, labelW, valW);
-    field('IFSC Code:', data.ifscCode, col2X, y, 20, 40);
-    y += 9;
-
-    // ===== SECTION 2: Address =====
+    // SECTION 2: Address
     checkPage(40);
-    y = sectionTitle('4. Pata Vivaran (Address Details)', y);
-
-    field('Gram:', data.village, col1X, y, 12, 55);
-    field('Panchayat:', data.panchayat, col2X, y, 22, 40);
-    y += 7;
+    y = sectionTitle('2. Pata Vivaran (Address Details)', y);
+    field('Rajya:', data.state, col1X, y, 14, 55);
+    field('Jila:', data.district, col2X, y, 12, 50); y += 7;
     field('Prakhanda:', data.block, col1X, y, 20, 47);
-    field('Jila:', data.district, col2X, y, 12, 50);
-    y += 7;
-    field('Rajya:', data.state, col1X, y, 14, 60);
-    y += 9;
+    field('Panchayat:', data.panchayat, col2X, y, 22, 40); y += 7;
+    field('Gram:', data.village, col1X, y, 12, 55);
+    field('Pin Code:', data.pincode, col2X, y, 18, 40); y += 9;
 
-    // ===== SECTION 3: Land Details =====
+    // SECTION 3: Land Details
     checkPage(50);
-    y = sectionTitle('5. Bhoomi Vivaran (Land Details)', y);
-
-    // Table header
+    y = sectionTitle('3. Bhoomi Vivaran (Land Details)', y);
     doc.setFillColor(240, 253, 244);
-    doc.rect(margin, y, W - margin*2, 6, 'F');
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'bold');
-    const col = [margin, margin+45, margin+80, margin+115];
-    doc.text('Bhoomi Prakar', col[0]+1, y+4);
-    doc.text('Kshetra (Acre)', col[1]+1, y+4);
-    doc.text('Swamitva', col[2]+1, y+4);
-    doc.setDrawColor(180,180,180);
-    doc.rect(margin, y, W - margin*2, 6);
-    y += 6;
-
-    // Row: Sinchai
+    doc.rect(margin, y, W - margin * 2, 6, 'F');
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold');
+    const col = [margin, margin + 45, margin + 80];
+    doc.text('Bhoomi Prakar', col[0] + 1, y + 4);
+    doc.text('Kshetra (Acre)', col[1] + 1, y + 4);
+    doc.text('Swamitva', col[2] + 1, y + 4);
+    doc.setDrawColor(180, 180, 180);
+    doc.rect(margin, y, W - margin * 2, 6); y += 6;
     doc.setFont('helvetica', 'normal');
-    doc.rect(margin, y, W - margin*2, 6);
-    doc.text('Sinchai (Irrigated)', col[0]+1, y+4);
-    doc.text(data.irrigatedArea, col[1]+1, y+4);
-    doc.text(data.irrigatedOwnership, col[2]+1, y+4);
-    y += 6;
+    doc.rect(margin, y, W - margin * 2, 6);
+    doc.text('Sinchai (Irrigated)', col[0] + 1, y + 4);
+    doc.text(data.irrigatedArea, col[1] + 1, y + 4);
+    doc.text(data.irrigatedOwnership, col[2] + 1, y + 4); y += 6;
+    doc.rect(margin, y, W - margin * 2, 6);
+    doc.text('Asinchai (Unirrigated)', col[0] + 1, y + 4);
+    doc.text(data.unirrigatedArea, col[1] + 1, y + 4);
+    doc.text(data.unirrigatedOwnership, col[2] + 1, y + 4); y += 9;
 
-    // Row: Asinchai
-    doc.rect(margin, y, W - margin*2, 6);
-    doc.text('Asinchai (Unirrigated)', col[0]+1, y+4);
-    doc.text(data.unirrigatedArea, col[1]+1, y+4);
-    doc.text(data.unirrigatedOwnership, col[2]+1, y+4);
-    y += 9;
-
-    // ===== SECTION 4: SHG/FPO =====
+    // SECTION 4: SHG/FPO
     checkPage(20);
-    y = sectionTitle('8. Samuh / Sangathan Judav (SHG/FPO)', y);
+    y = sectionTitle('4. Samuh / Sangathan Judav (SHG/FPO)', y);
     field('SHG/FPO Sadasya:', data.shgMember, col1X, y, 32, 20);
-    if (data.shgMember === 'हाँ' && data.shgName) {
-        field('Naam:', data.shgName, col2X, y, 12, 55);
-    }
+    if (data.shgMember === 'हाँ' && data.shgName) { field('Naam:', data.shgName, col2X, y, 12, 55); }
     y += 9;
 
-    // ===== SECTION 5: Crop Details =====
+    // SECTION 5: Crop Details
     checkPage(30 + data.crops.length * 7);
-    y = sectionTitle('6. Prastaavit Fasal Vivaran (Crop Details)', y);
-
-    // Table header
+    y = sectionTitle('5. Prastaavit Fasal Vivaran (Crop Details)', y);
     doc.setFillColor(240, 253, 244);
-    doc.rect(margin, y, W - margin*2, 6, 'F');
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'bold');
-    const cropCols = [margin, margin+60, margin+100, margin+140];
-    doc.text('Fasal ka Naam', cropCols[0]+1, y+4);
-    doc.text('Buwai Maah', cropCols[1]+1, y+4);
-    doc.text('Katai Maah', cropCols[2]+1, y+4);
-    doc.setDrawColor(180,180,180);
-    doc.rect(margin, y, W - margin*2, 6);
-    y += 6;
-
+    doc.rect(margin, y, W - margin * 2, 6, 'F');
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold');
+    const cropCols = [margin, margin + 60, margin + 100];
+    doc.text('Fasal ka Naam', cropCols[0] + 1, y + 4);
+    doc.text('Buwai Maah', cropCols[1] + 1, y + 4);
+    doc.text('Katai Maah', cropCols[2] + 1, y + 4);
+    doc.setDrawColor(180, 180, 180);
+    doc.rect(margin, y, W - margin * 2, 6); y += 6;
     doc.setFont('helvetica', 'normal');
     data.crops.forEach((crop, i) => {
         checkPage(7);
-        doc.rect(margin, y, W - margin*2, 6);
-        doc.text(String(i+1) + '. ' + (crop.name || ''), cropCols[0]+1, y+4);
-        doc.text(crop.sowingMonth || '', cropCols[1]+1, y+4);
-        doc.text(crop.harvestMonth || '', cropCols[2]+1, y+4);
+        doc.rect(margin, y, W - margin * 2, 6);
+        doc.text(String(i + 1) + '. ' + (crop.name || ''), cropCols[0] + 1, y + 4);
+        doc.text(crop.sowingMonth || '', cropCols[1] + 1, y + 4);
+        doc.text(crop.harvestMonth || '', cropCols[2] + 1, y + 4);
         y += 6;
-    });
-    y += 4;
+    }); y += 4;
 
-    // ===== SECTION 6: Previous Experience =====
+    // SECTION 6: Previous Experience
     checkPage(20);
-    y = sectionTitle('7. Poorv Anubhav (Previous Experience)', y);
-    field('Kya aapne pehle Aushadhiya Fasal ugaai hai?', data.previousMedicinal, col1X, y, 82, 20);
-    y += 7;
+    y = sectionTitle('6. Poorv Anubhav (Previous Experience)', y);
+    field('Kya aapne pehle Aushadhiya Fasal ugaai hai?', data.previousMedicinal, col1X, y, 82, 20); y += 7;
     if (data.previousMedicinal === 'हाँ' && data.prevExpDescription) {
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8); doc.setFont('helvetica', 'bold');
         doc.text('Vivaran:', col1X, y);
         doc.setFont('helvetica', 'normal');
-        const lines = doc.splitTextToSize(data.prevExpDescription, W - margin*2 - 25);
+        const lines = doc.splitTextToSize(data.prevExpDescription, W - margin * 2 - 25);
         doc.text(lines, col1X + 20, y);
         y += lines.length * 5 + 2;
     }
     y += 3;
 
-    // ===== SECTION 7: Consent =====
-    checkPage(35);
-    y = sectionTitle('9. Utpadan evam Vipanan Sahmati (Consent)', y);
-    doc.setFontSize(7.5);
-    doc.setFont('helvetica', 'normal');
-    const consentLines = [
-        '✔ Company ke nirdeshanusar kheti karunga/karungi',
-        '✔ Gunvatta maankon ka paalan karunga/karungi',
-        '✔ Utpada ko praathamikta se Company ko bechunga/bechungi'
-    ];
-    consentLines.forEach(line => {
-        doc.text(line, col1X + 2, y);
-        y += 5;
-    });
-    y += 3;
-
-    // ===== SECTION 8: Documents List =====
+    // SECTION 7: T&C
     checkPage(30);
-    y = sectionTitle('10. Aavashyak Dastavej (Required Documents)', y);
-    doc.setFontSize(8);
-    ['☐ Aadhar Card', '☐ Bank Passbook', '☐ Bhoomi Dastavej / Lease Agreement', '☐ Photo'].forEach(item => {
-        doc.text(item, col1X + 2, y);
-        y += 5;
-    });
-    y += 4;
+    y = sectionTitle('7. Niyam evam Shartein (Terms & Conditions)', y);
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'normal');
+    const termsText = 'Main yah ghoshit karta/karti hun ki di gayi sabhi jaankaari satya hai. Main company ke nirdeshanusar kheti karunga/karungi aur gunvatta maankon ka paalan karunga/karungi. Main utpada ko praathamikta se company ko bechunga/bechungi. Yadi koi jaankaari galat payi jaati hai, to panjikaran nirasht kiya ja sakta hai.';
+    const termsLines = doc.splitTextToSize(termsText, W - margin * 2 - 4);
+    doc.text(termsLines, col1X + 2, y);
+    y += termsLines.length * 4 + 6;
 
-    // ===== SECTION 9: Declaration =====
+    // SECTION 8: Signatures
     checkPage(30);
-    y = sectionTitle('11. Ghoshana (Declaration)', y);
-    doc.setFontSize(7.5);
-    const declText = 'Main yah ghoshit karta/karti hun ki di gayi sabhi jaankaari satya hai. Yadi koi jaankaari galat payi jaati hai, to panjikaran nirasht kiya ja sakta hai.';
-    const declLines = doc.splitTextToSize(declText, W - margin*2 - 4);
-    doc.text(declLines, col1X + 2, y);
-    y += declLines.length * 4 + 6;
-
-    // ===== SECTION 10: Signatures =====
-    checkPage(30);
-    y = sectionTitle('12. Hastaakshar (Signatures)', y);
+    y = sectionTitle('8. Hastaakshar (Signatures)', y);
     y += 8;
-
-    // Two boxes for signatures
-    const sigW = (W - margin*2 - 10) / 2;
-    doc.setDrawColor(120,120,120);
+    const sigW = (W - margin * 2 - 10) / 2;
+    doc.setDrawColor(120, 120, 120);
     doc.rect(margin, y, sigW, 20);
     doc.rect(margin + sigW + 10, y, sigW, 20);
-
-    doc.setFontSize(7.5);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Kisan Hastaakshar / Angutha Nishan', margin + sigW/2, y + 25, { align: 'center' });
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'bold');
+    doc.text('Kisan Hastaakshar / Angutha Nishan', margin + sigW / 2, y + 25, { align: 'center' });
     doc.text('Naam: ' + data.fullName, margin + 2, y + 23);
-    doc.text('Company Pratinidhi', margin + sigW + 10 + sigW/2, y + 25, { align: 'center' });
+    doc.text('Company Pratinidhi', margin + sigW + 10 + sigW / 2, y + 25, { align: 'center' });
     y += 30;
 
     // Footer
     checkPage(12);
-    doc.setFillColor(27, 58, 26);
+    doc.setFillColor(BRAND_R, BRAND_G, BRAND_B);
     doc.rect(0, y, W, 10, 'F');
-    doc.setTextColor(255,255,255);
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Submitted: ${data.submittedAt} | Reg No: ${data.regNumber}`, W/2, y + 6, { align: 'center' });
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal');
+    doc.text(`Submitted: ${data.submittedAt} | Reg No: ${data.regNumber}`, W / 2, y + 6, { align: 'center' });
 
     return doc.output('blob');
 }
 
 // ==========================================
-// SEND PDF TO TELEGRAM
+// DOWNLOAD PDF
 // ==========================================
+async function downloadPDFPreview() {
+    try {
+        const formData = collectFormData();
+        const pdfBlob = await generatePDF(formData);
+        const url = URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Kisan_Registration_${formData.regNumber}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+    } catch (e) {
+        showNotification('PDF download mein error: ' + e.message, 'error');
+    }
+}
 
+// ==========================================
+// SEND TO TELEGRAM
+// ==========================================
 async function sendPDFToTelegram(pdfBlob, data) {
     const fileName = `Kisan_Registration_${data.regNumber}.pdf`;
-
     const formData = new FormData();
     formData.append('chat_id', CONFIG.telegramChatId);
     formData.append('document', pdfBlob, fileName);
@@ -684,8 +565,6 @@ async function sendPDFToTelegram(pdfBlob, data) {
         `📍 *Sthan:* ${data.district}, ${data.state}\n` +
         `🌾 *Bhoomi:* Sinchai: ${data.irrigatedArea} Acre | Asinchai: ${data.unirrigatedArea} Acre\n` +
         `🌿 *Fasalein:* ${data.crops.map(c => c.name).join(', ')}\n` +
-        `🪪 *Aadhar:* ${data.aadharNumber}\n` +
-        `🏦 *Bank:* ${data.bankAccount} | IFSC: ${data.ifscCode}\n` +
         `🆔 *Reg No:* ${data.regNumber}\n` +
         `⏰ *Samay:* ${data.submittedAt}`
     );
@@ -695,11 +574,9 @@ async function sendPDFToTelegram(pdfBlob, data) {
         method: 'POST',
         body: formData
     });
-
     const result = await response.json();
     if (!result.ok) {
         console.error('Telegram error:', result);
-        // Don't fail the whole submission if Telegram fails
         showNotification('Telegram notification fail hua, lekin form jama ho gaya', 'info');
     }
 }
@@ -707,17 +584,13 @@ async function sendPDFToTelegram(pdfBlob, data) {
 // ==========================================
 // NOTIFICATION
 // ==========================================
-
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg transform transition-all duration-300 ${
-        type === 'success' ? 'bg-green-500' :
-        type === 'error' ? 'bg-red-500' :
-        'bg-blue-500'
-    } text-white max-w-xs`;
+    notification.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-xl shadow-xl transform transition-all duration-300 text-white max-w-xs`;
+    notification.style.background = type === 'success' ? '#16a34a' : type === 'error' ? '#dc2626' : '#2563eb';
+    notification.style.transform = 'translateX(500px)';
     notification.textContent = message;
     document.body.appendChild(notification);
-
     setTimeout(() => { notification.style.transform = 'translateX(0)'; }, 10);
     setTimeout(() => {
         notification.style.transform = 'translateX(500px)';
