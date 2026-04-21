@@ -2,8 +2,8 @@
 // CONFIGURATION
 // ==========================================
 const CONFIG = {
-    telegramBotToken: '8596686665:AAHwdJoL70SUHNZMDNi1lwRocCAEYigJwuU',
-    telegramChatId: '-1003880115435'
+    telegramBotToken: '8596686665:AAHV4SsdwMmXxrLCzOfUUpg4H48DFvTiQIg',
+    telegramChatId: '-1003840610447'
 };
 
 // ==========================================
