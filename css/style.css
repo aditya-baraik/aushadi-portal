@@ -1,19 +1,16 @@
-/* ══════════════════════════════════════════════════════════
-   Aushadhiyog — Premium Redesigned Stylesheet
-   Preserves all original colors (#1B3A1A, #F5F0E8, #B75C2A)
-   Elevates to professional UI quality
-   ══════════════════════════════════════════════════════════ */
+/* Custom Styles for Aushadhiyog Portal */
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans','Noto Sans Devanagari',sans-serif; line-height:1.6; }
 
-/* Upload hover/state */
-.upload-area:hover  { border-color:#1B3A1A !important; background:rgba(27,58,26,.03) !important; }
-.upload-area.uploaded { border-color:#1B3A1A !important; background:rgba(27,58,26,.04) !important; }
+/* Upload hover */
+.upload-area:hover { border-color:#1b3a1a !important; background:#f5f0e8 !important; }
+.upload-area.uploaded { border-color:#1b3a1a !important; background:#f5f0e8 !important; }
 
 /* Accessibility */
-*:focus-visible { outline:2px solid #1B3A1A; outline-offset:3px; }
+*:focus-visible { outline:2px solid #1b3a1a; outline-offset:2px; }
 html { scroll-behavior:smooth; }
-::selection { background:#1B3A1A; color:#fff; }
+::selection { background:#1b3a1a; color:#fff; }
 
-/* Spinner */
 @keyframes spin { to { transform:rotate(360deg); } }
 .animate-spin { animation:spin 1s linear infinite; }
 
@@ -21,20 +18,3 @@ html { scroll-behavior:smooth; }
 
 /* Error field highlight */
 .border-red-500 { border-color:#ef4444 !important; }
-
-/* ── Smooth input transitions ── */
-.form-input {
-    transition: border-color .22s ease, box-shadow .22s ease, background .22s ease;
-}
-
-/* ── Enhanced textarea ── */
-textarea.form-input { resize:vertical; min-height:100px; }
-
-/* ── Number input cleanup ── */
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button { opacity:.5; }
-
-/* ── Date input ── */
-input[type=date]::-webkit-calendar-picker-indicator {
-    opacity:.5; cursor:pointer; filter:invert(20%) sepia(50%) saturate(500%) hue-rotate(90deg);
-}
