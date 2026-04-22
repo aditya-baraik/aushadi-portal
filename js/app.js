@@ -12,7 +12,7 @@ const CONFIG = {
 let currentStep = 1;
 const totalSteps = 4;
 let photoDataUrl = null;
-// Track which steps the user has visited and left (so red dots only show after interaction)
+// Track which steps user has visited — red dot only shows after interaction
 const stepTouched = { 1: false, 2: false, 3: false, 4: false };
 
 // ==========================================
@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeDOBAutoAge();
     initializePrevExpToggle();
     initializeTitleCase();
-    // Attach real-time dot update on all inputs (only for touched steps)
     document.getElementById('registrationForm').addEventListener('change', function() {
         checkAllStepsDots();
     });
@@ -101,7 +100,7 @@ function initializePrevExpToggle() {
 }
 
 // ==========================================
-// TITLE CASE — auto-capitalize text inputs
+// TITLE CASE — auto-capitalize on blur
 // ==========================================
 function toTitleCase(str) {
     return str.replace(/\S+/g, function(word) {
@@ -110,23 +109,17 @@ function toTitleCase(str) {
 }
 
 function initializeTitleCase() {
-    // Apply to all text inputs and textareas (skip readonly, date, number, tel, checkbox, etc.)
-    const textSelectors = 'input[type="text"], textarea';
-    document.querySelectorAll(textSelectors).forEach(function(el) {
+    // Static inputs
+    document.querySelectorAll('input[type="text"], textarea').forEach(function(el) {
         el.addEventListener('blur', function() {
-            if (this.value.trim()) {
-                this.value = toTitleCase(this.value);
-            }
+            if (this.value.trim()) this.value = toTitleCase(this.value);
         });
     });
-
-    // Also apply to dynamically added crop inputs (via event delegation)
+    // Dynamic inputs (crop entries added later)
     document.getElementById('registrationForm').addEventListener('blur', function(e) {
         const el = e.target;
         if ((el.tagName === 'INPUT' && el.type === 'text') || el.tagName === 'TEXTAREA') {
-            if (el.value.trim()) {
-                el.value = toTitleCase(el.value);
-            }
+            if (el.value.trim()) el.value = toTitleCase(el.value);
         }
     }, true);
 }
@@ -135,24 +128,16 @@ function initializeTitleCase() {
 // FORM STEP NAVIGATION
 // ==========================================
 function initializeForm() {
-    // NEXT: mark current step as touched, then advance
     document.getElementById('nextBtn').addEventListener('click', () => {
         stepTouched[currentStep] = true;
         checkStepCompleteness(currentStep);
-        if (currentStep < totalSteps) {
-            currentStep++;
-            updateFormDisplay();
-        }
+        if (currentStep < totalSteps) { currentStep++; updateFormDisplay(); }
     });
 
-    // PREV: mark current step as touched, then go back
     document.getElementById('prevBtn').addEventListener('click', () => {
         stepTouched[currentStep] = true;
         checkStepCompleteness(currentStep);
-        if (currentStep > 1) {
-            currentStep--;
-            updateFormDisplay();
-        }
+        if (currentStep > 1) { currentStep--; updateFormDisplay(); }
     });
 
     document.getElementById('registrationForm').addEventListener('submit', handleFormSubmit);
@@ -187,13 +172,12 @@ function updateFormDisplay() {
     document.getElementById('downloadPdfBtn').style.display = currentStep === totalSteps ? 'block' : 'none';
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    // Update dots after navigation
     setTimeout(checkAllStepsDots, 50);
 }
 
 // ==========================================
 // STEP COMPLETENESS CHECK → RED DOT
-// Only shows red dot if that step has been touched/visited
+// Only shows after user has touched that step
 // ==========================================
 function checkStepCompleteness(stepNum) {
     const stepEl = document.querySelector(`.form-step[data-step="${stepNum}"]`);
@@ -228,7 +212,7 @@ function checkAllStepsDots() {
 // ==========================================
 function validateAllSteps() {
     let allValid = true;
-    // Mark all steps as touched on submit attempt
+    // Mark all steps touched on submit
     for (let i = 1; i <= totalSteps; i++) stepTouched[i] = true;
 
     for (let stepNum = 1; stepNum <= totalSteps; stepNum++) {
@@ -360,14 +344,13 @@ function collectFormData() {
 }
 
 // ==========================================
-// FORM SUBMISSION — validates ALL steps
+// FORM SUBMISSION
 // ==========================================
 async function handleFormSubmit(e) {
     e.preventDefault();
 
     if (!validateAllSteps()) {
         showNotification('कृपया सभी टैब के * आवश्यक फील्ड भरें', 'error');
-        // Go to first incomplete step
         for (let i = 1; i <= totalSteps; i++) {
             const stepEl = document.querySelector(`.form-step[data-step="${i}"]`);
             const inputs = stepEl.querySelectorAll('input[required], select[required], textarea[required]');
@@ -413,7 +396,7 @@ async function generatePDF(data) {
     const doc = new jsPDF('p', 'mm', 'a4');
     const W = 210;
     const margin = 12;
-    let y = 20;
+    let y = 25;   // FIX: was 20, now 25 — adds gap between header and Section 1
     const BRAND_R = 27, BRAND_G = 58, BRAND_B = 26;
 
     function checkPage(requiredSpace) {
@@ -457,7 +440,7 @@ async function generatePDF(data) {
         catch (e) { console.error('Photo error:', e); }
     }
 
-    // SECTION 1: Personal Info
+    // SECTION 1
     y = sectionTitle('1. Vyaktigat Jaankaari (Personal Information)', y);
     const col1X = margin + 2;
     const col2X = margin + 2 + 90;
@@ -470,7 +453,7 @@ async function generatePDF(data) {
     if (data.altPhone) { field('Alt Mobile:', data.altPhone, col1X, y, 22, 40); y += 7; }
     y += 3;
 
-    // SECTION 2: Address
+    // SECTION 2
     checkPage(40);
     y = sectionTitle('2. Pata Vivaran (Address Details)', y);
     field('Rajya:', data.state, col1X, y, 14, 55);
@@ -480,7 +463,7 @@ async function generatePDF(data) {
     field('Gram:', data.village, col1X, y, 12, 55);
     field('Pin Code:', data.pincode, col2X, y, 18, 40); y += 9;
 
-    // SECTION 3: Land Details
+    // SECTION 3
     checkPage(50);
     y = sectionTitle('3. Bhoomi Vivaran (Land Details)', y);
     doc.setFillColor(240, 253, 244);
@@ -502,14 +485,14 @@ async function generatePDF(data) {
     doc.text(data.unirrigatedArea, col[1] + 1, y + 4);
     doc.text(data.unirrigatedOwnership, col[2] + 1, y + 4); y += 9;
 
-    // SECTION 4: SHG/FPO
+    // SECTION 4
     checkPage(20);
     y = sectionTitle('4. Samuh / Sangathan Judav (SHG/FPO)', y);
     field('SHG/FPO Sadasya:', data.shgMember, col1X, y, 32, 20);
     if (data.shgMember === 'हाँ' && data.shgName) { field('Naam:', data.shgName, col2X, y, 12, 55); }
     y += 9;
 
-    // SECTION 5: Crop Details
+    // SECTION 5
     checkPage(30 + data.crops.length * 7);
     y = sectionTitle('5. Prastaavit Fasal Vivaran (Crop Details)', y);
     doc.setFillColor(240, 253, 244);
@@ -531,7 +514,7 @@ async function generatePDF(data) {
         y += 6;
     }); y += 4;
 
-    // SECTION 6: Previous Experience
+    // SECTION 6
     checkPage(20);
     y = sectionTitle('6. Poorv Anubhav (Previous Experience)', y);
     field('Kya aapne pehle Aushadhiya Fasal ugaai hai?', data.previousMedicinal, col1X, y, 82, 20); y += 7;
@@ -545,7 +528,7 @@ async function generatePDF(data) {
     }
     y += 3;
 
-    // SECTION 7: T&C — FIX: "Evam" (capital E)
+    // SECTION 7: FIX — "Evam" capital E
     checkPage(30);
     y = sectionTitle('7. Niyam Evam Shartein (Terms & Conditions)', y);
     doc.setFontSize(7.5); doc.setFont('helvetica', 'normal');
@@ -554,8 +537,8 @@ async function generatePDF(data) {
     doc.text(termsLines, col1X + 2, y);
     y += termsLines.length * 4 + 6;
 
-    // SECTION 8: Signatures
-    checkPage(50);
+    // SECTION 8: FIX — checkPage(65) ensures full signatures block stays on same page
+    checkPage(65);
     y = sectionTitle('8. Hastaakshar (Signatures)', y);
     y += 8;
     const sigW = (W - margin * 2 - 10) / 2;
@@ -568,7 +551,7 @@ async function generatePDF(data) {
     doc.text('Company Pratinidhi', margin + sigW + 10 + sigW / 2, y + 25, { align: 'center' });
     y += 30;
 
-    // Footer — placed right after signatures, no extra page added
+    // FOOTER — no checkPage, placed directly after signatures
     doc.setFillColor(BRAND_R, BRAND_G, BRAND_B);
     doc.rect(0, y, W, 10, 'F');
     doc.setTextColor(255, 255, 255);
