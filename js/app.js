@@ -866,8 +866,8 @@ async function generatePDF(data) {
     // ════════════════════════════════
     y = secHeader('7. Niyam Evam Shartein (Terms & Conditions)', y);
     const termsText = 'Main yah ghoshit karta/karti hun ki di gayi sabhi jaankaari satya hai. Main company ke nirdeshanusar kheti karunga/karungi aur gunvatta maankon ka paalan karunga/karungi. Utpaadit Aushadhiya Fasal ko prathamikta se company ko bechunga/bechungi. Yadi koi jaankaari galat payi jaati hai, to panjikaran nirasht kiya ja sakta hai.';
-    const tLines = doc.splitTextToSize(termsText, CW - 8);
-    const tH = tLines.length * 3.8 + 8;
+    const tLines = doc.splitTextToSize(termsText, CW - 14);
+    const tH = tLines.length * 4.8 + 8;
     doc.setFillColor(248, 254, 248);
     doc.setDrawColor(...MID_GREEN);
     doc.setLineWidth(0.5);
