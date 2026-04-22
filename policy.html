@@ -285,44 +285,6 @@
             .contact-box { flex-direction:column; align-items:flex-start; }
         }
     </style>
-    <script>
-// 1. Right-click disable
-document.addEventListener('contextmenu', function(e) {
-  e.preventDefault();
-  return false;
-});
-
-// 2. F12, Ctrl+U, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C block
-document.addEventListener('keydown', function(e) {
-  // F12
-  if (e.key === 'F12') { e.preventDefault(); return false; }
-  
-  // Ctrl+U (View Source)
-  if (e.ctrlKey && e.key === 'u') { e.preventDefault(); return false; }
-  
-  // Ctrl+Shift+I (DevTools)
-  if (e.ctrlKey && e.shiftKey && e.key === 'I') { e.preventDefault(); return false; }
-  
-  // Ctrl+Shift+J (Console)
-  if (e.ctrlKey && e.shiftKey && e.key === 'J') { e.preventDefault(); return false; }
-  
-  // Ctrl+Shift+C (Inspector)
-  if (e.ctrlKey && e.shiftKey && e.key === 'C') { e.preventDefault(); return false; }
-  
-  // Ctrl+S (Save page)
-  if (e.ctrlKey && e.key === 's') { e.preventDefault(); return false; }
-});
-
-// 3. DevTools open detection (debugger loop)
-setInterval(function() {
-  const start = new Date();
-  debugger;
-  const end = new Date();
-  if (end - start > 100) {
-    document.body.innerHTML = '<h1 style="text-align:center; margin-top:20%; font-family:sans-serif;">Access Denied</h1>';
-  }
-}, 1000);
-</script>
 </head>
 <body>
 
@@ -496,7 +458,7 @@ setInterval(function() {
 
     <!-- Back button -->
     <div style="display:flex; justify-content:center; padding-top:8px;">
-        <a href="index.html#step4" class="back-btn">
+        <a href="javascript:void(0)" onclick="if(sessionStorage.getItem('fromStep4')){sessionStorage.removeItem('fromStep4');location.href='index.html#step4';}else{history.back();}" class="back-btn">
             <svg style="width:16px;height:16px;stroke:#fff;fill:none;" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
             </svg>
@@ -511,7 +473,7 @@ setInterval(function() {
     <div class="footer-gold"></div>
     <p>
         झारखंड की मिट्टी से आपकी दवाई तक। &nbsp;&copy;&nbsp;2025
-        <a href="index.html#step4">Aushadhiyog Platform Pvt. Ltd.</a>
+        <a href="index.html">Aushadhiyog Platform Pvt. Ltd.</a>
     </p>
 </footer>
 
