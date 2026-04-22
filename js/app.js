@@ -746,14 +746,10 @@ async function generatePDF(data) {
     infoLine('Janm Tithi:', data.dob, ML + 2, y + 6, 24);
     infoLine('Aayu:', (data.age || '—') + ' varsh', ML + 2 + 68, y + 6, 14); y += rowH;
 
-    // Gender row
+    // Gender + Mobile (Mobile positioned directly below Aayu)
     doc.rect(ML, y, s1CW, rowH);
-    infoLine('Ling:', data.gender, ML + 2, y + 6, 14); y += rowH;
-
-    // Mobile row
-    doc.setFillColor(...ROW_ALT); doc.rect(ML, y, s1CW, rowH, 'F');
-    doc.rect(ML, y, s1CW, rowH);
-    infoLine('Mobile:', data.phone, ML + 2, y + 6, 20); y += rowH;
+    infoLine('Ling:', data.gender, ML + 2, y + 6, 14);
+    infoLine('Mobile:', data.phone, ML + 2 + 68, y + 6, 17); y += rowH;
 
     y = Math.max(y, photoY + photoH + 6) + 2;
 
@@ -879,7 +875,7 @@ async function generatePDF(data) {
     // Left accent
     doc.setFillColor(...MID_GREEN);
     doc.rect(ML, y, 2, tH, 'F');
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...GREY_TEXT);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...GREY_TEXT);
     doc.text(tLines, ML + 5, y + 5);
     y += tH + 3;
 
