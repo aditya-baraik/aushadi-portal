@@ -895,38 +895,40 @@ async function generatePDF(data) {
     y += tH + 3;
 
     // ════════════════════════════════
-    // SECTION 8 — Signatures
+    // FOOTER BAND — always pinned to bottom of A4
+    // ════════════════════════════════
+    const footerY = H - 10;
+
+    // ════════════════════════════════
+    // SECTION 8 — Signatures (stretches to fill gap before footer)
     // ════════════════════════════════
     y = secHeader('8. Hastaakshar (Signatures)', y);
     y += 3;
     const sigW = (CW - 8) / 2;
+    // Make sig box fill all remaining space above footer
+    const sigH = Math.max(22, footerY - y - 8);
 
     // Left signature box
     doc.setFillColor(...LIGHT_GREEN);
     doc.setDrawColor(...MID_GREEN);
     doc.setLineWidth(0.4);
-    doc.roundedRect(ML, y, sigW, 22, 1.5, 1.5, 'FD');
+    doc.roundedRect(ML, y, sigW, sigH, 1.5, 1.5, 'FD');
     // Right signature box
-    doc.roundedRect(ML + sigW + 8, y, sigW, 22, 1.5, 1.5, 'FD');
+    doc.roundedRect(ML + sigW + 8, y, sigW, sigH, 1.5, 1.5, 'FD');
 
     // Signature labels
     doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(...GREY_TEXT);
-    doc.text('Naam: ' + data.fullName, ML + 3, y + 16);
+    doc.text('Naam: ' + data.fullName, ML + 3, y + sigH - 8);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
-    // Underlines at center
+    // Underlines near bottom of box
     doc.setDrawColor(...ACCENT_GOLD); doc.setLineWidth(0.5);
-    doc.line(ML + sigW * 0.15, y + 14, ML + sigW * 0.85, y + 14);
-    doc.line(ML + sigW + 8 + sigW * 0.15, y + 14, ML + sigW + 8 + sigW * 0.85, y + 14);
+    doc.line(ML + sigW * 0.15, y + sigH - 10, ML + sigW * 0.85, y + sigH - 10);
+    doc.line(ML + sigW + 8 + sigW * 0.15, y + sigH - 10, ML + sigW + 8 + sigW * 0.85, y + sigH - 10);
 
     doc.setTextColor(...GREY_TEXT);
-    doc.text('Kisan Hastaakshar / Angutha Nishan', ML + sigW / 2, y + 26, { align: 'center' });
-    doc.text('Company Pratinidhi', ML + sigW + 8 + sigW / 2, y + 26, { align: 'center' });
-    y += 30;
+    doc.text('Kisan Hastaakshar / Angutha Nishan', ML + sigW / 2, y + sigH + 4, { align: 'center' });
+    doc.text('Company Pratinidhi', ML + sigW + 8 + sigW / 2, y + sigH + 4, { align: 'center' });
 
-    // ════════════════════════════════
-    // FOOTER BAND — always pinned to bottom of A4
-    // ════════════════════════════════
-    const footerY = H - 10;
     doc.setFillColor(...DARK_GREEN);
     doc.rect(0, footerY, W, 10, 'F');
     doc.setFillColor(...ACCENT_GOLD);
