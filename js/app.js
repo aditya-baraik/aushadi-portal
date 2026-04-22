@@ -666,39 +666,10 @@ async function generatePDF(data) {
 
     y = 32;
 
-    // ════════════════════════════════
-    // PHOTO — positioned top-right beside section 1
-    // ════════════════════════════════
-    const photoW = 28, photoH = 35;
-    const photoX = W - MR - photoW;
-    const photoY = y + 1;
-
-    if (data.photo) {
-        try {
-            // Outer border (green)
-            doc.setDrawColor(...DARK_GREEN);
-            doc.setLineWidth(0.8);
-            doc.roundedRect(photoX - 1, photoY - 1, photoW + 2, photoH + 2, 1, 1);
-            doc.addImage(data.photo, 'JPEG', photoX, photoY, photoW, photoH, undefined, 'FAST');
-        } catch (e) { console.error('Photo:', e); }
-    } else {
-        doc.setFillColor(...CREAM);
-        doc.setDrawColor(...DARK_GREEN);
-        doc.setLineWidth(0.6);
-        doc.roundedRect(photoX, photoY, photoW, photoH, 1, 1, 'FD');
-        doc.setFontSize(6.5); doc.setTextColor(...GREY_TEXT);
-        doc.text('PHOTO', photoX + photoW / 2, photoY + photoH / 2, { align: 'center' });
-    }
-    // "Passport Photo" label below
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6); doc.setTextColor(...GREY_TEXT);
-    doc.text('Passport Size Photo', photoX + photoW / 2, photoY + photoH + 4, { align: 'center' });
-
     // ── SECTION HEADER helper ──
     function secHeader(title, yPos) {
         doc.setFillColor(...DARK_GREEN);
         doc.rect(ML, yPos, CW, 7, 'F');
-        // Left accent bar
         doc.setFillColor(...ACCENT_GOLD);
         doc.rect(ML, yPos, 2.5, 7, 'F');
         doc.setTextColor(...WHITE);
@@ -715,12 +686,10 @@ async function generatePDF(data) {
         doc.setDrawColor(...BORDER_GREY);
         doc.setLineWidth(0.25);
         doc.rect(x, yPos, cellW, rowH);
-        // Label
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(7);
         doc.setTextColor(...GREY_TEXT);
         doc.text(label, x + 2, yPos + 3.9);
-        // Value
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(...DARK_TEXT);
         const maxW = cellW - labelW - 3;
@@ -728,7 +697,7 @@ async function generatePDF(data) {
         doc.text(txt[0] || '', x + labelW + 2, yPos + 3.9);
     }
 
-    // ── PLAIN INFO ROW (no border) ──
+    // ── PLAIN INFO ROW ──
     function infoLine(label, value, x, yPos, labelW) {
         doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(...GREY_TEXT);
         doc.text(label, x, yPos);
@@ -739,11 +708,33 @@ async function generatePDF(data) {
     // ════════════════════════════════
     // SECTION 1 — Personal Information
     // ════════════════════════════════
-    const photoRightX = photoX - 5; // content stops before photo
-    const s1CW = photoRightX - ML;  // narrower content width (left of photo)
-
     y = secHeader('1. Vyaktigat Jaankaari (Personal Information)', y);
-    const s1Start = y;
+
+    // Photo: drawn INSIDE section 1, top-right
+    const photoW = 28, photoH = 34;
+    const photoX = W - MR - photoW;
+    const photoY = y + 1;
+    const photoRightX = photoX - 5;
+    const s1CW = photoRightX - ML;
+
+    if (data.photo) {
+        try {
+            doc.setDrawColor(...DARK_GREEN);
+            doc.setLineWidth(0.8);
+            doc.roundedRect(photoX - 1, photoY - 1, photoW + 2, photoH + 2, 1, 1);
+            doc.addImage(data.photo, 'JPEG', photoX, photoY, photoW, photoH, undefined, 'FAST');
+        } catch (e) { console.error('Photo:', e); }
+    } else {
+        doc.setFillColor(...CREAM);
+        doc.setDrawColor(...DARK_GREEN);
+        doc.setLineWidth(0.6);
+        doc.roundedRect(photoX, photoY, photoW, photoH, 1, 1, 'FD');
+        doc.setFontSize(6.5); doc.setTextColor(...GREY_TEXT);
+        doc.text('PHOTO', photoX + photoW / 2, photoY + photoH / 2, { align: 'center' });
+    }
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6); doc.setTextColor(...GREY_TEXT);
+    doc.text('Passport Size Photo', photoX + photoW / 2, photoY + photoH + 4, { align: 'center' });
 
     const rowH = 6;
     // Name
@@ -755,7 +746,7 @@ async function generatePDF(data) {
     doc.rect(ML, y, s1CW, rowH);
     infoLine('Pita/Pati ka Naam:', data.fatherName, ML + 2, y + 4, 38); y += rowH;
 
-    // DOB + Age side by side
+    // DOB + Age
     doc.setFillColor(...ROW_ALT); doc.rect(ML, y, s1CW, rowH, 'F');
     doc.rect(ML, y, s1CW, rowH);
     infoLine('Janm Tithi:', data.dob, ML + 2, y + 4, 24);
@@ -766,7 +757,7 @@ async function generatePDF(data) {
     infoLine('Ling:', data.gender, ML + 2, y + 4, 14);
     infoLine('Mobile:', data.phone, ML + 2 + 50, y + 4, 17); y += rowH;
 
-    y = Math.max(y, photoY + photoH + 5) + 2;
+    y = Math.max(y, photoY + photoH + 6) + 2;
 
     // ════════════════════════════════
     // SECTION 2 — Address
@@ -895,47 +886,40 @@ async function generatePDF(data) {
     y += tH + 3;
 
     // ════════════════════════════════
-    // FOOTER BAND — always pinned to bottom of A4
-    // ════════════════════════════════
-    const footerY = H - 10;
-
-    // ════════════════════════════════
-    // SECTION 8 — Signatures (stretches to fill gap before footer)
+    // SECTION 8 — Signatures
     // ════════════════════════════════
     y = secHeader('8. Hastaakshar (Signatures)', y);
     y += 3;
     const sigW = (CW - 8) / 2;
-    // Make sig box fill all remaining space above footer
-    const sigH = Math.max(22, footerY - y - 8);
+    const sigH = 28; // fixed height
 
-    // Left signature box
     doc.setFillColor(...LIGHT_GREEN);
     doc.setDrawColor(...MID_GREEN);
     doc.setLineWidth(0.4);
     doc.roundedRect(ML, y, sigW, sigH, 1.5, 1.5, 'FD');
-    // Right signature box
     doc.roundedRect(ML + sigW + 8, y, sigW, sigH, 1.5, 1.5, 'FD');
 
-    // Signature labels
     doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(...GREY_TEXT);
-    doc.text('Naam: ' + data.fullName, ML + 3, y + sigH - 8);
+    doc.text('Naam: ' + data.fullName, ML + 3, y + sigH - 7);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
-    // Underlines near bottom of box
     doc.setDrawColor(...ACCENT_GOLD); doc.setLineWidth(0.5);
-    doc.line(ML + sigW * 0.15, y + sigH - 10, ML + sigW * 0.85, y + sigH - 10);
-    doc.line(ML + sigW + 8 + sigW * 0.15, y + sigH - 10, ML + sigW + 8 + sigW * 0.85, y + sigH - 10);
+    doc.line(ML + sigW * 0.15, y + sigH - 9, ML + sigW * 0.85, y + sigH - 9);
+    doc.line(ML + sigW + 8 + sigW * 0.15, y + sigH - 9, ML + sigW + 8 + sigW * 0.85, y + sigH - 9);
 
     doc.setTextColor(...GREY_TEXT);
     doc.text('Kisan Hastaakshar / Angutha Nishan', ML + sigW / 2, y + sigH + 4, { align: 'center' });
     doc.text('Company Pratinidhi', ML + sigW + 8 + sigW / 2, y + sigH + 4, { align: 'center' });
 
+    // ════════════════════════════════
+    // FOOTER BAND — pinned to bottom of A4
+    // ════════════════════════════════
     doc.setFillColor(...DARK_GREEN);
-    doc.rect(0, footerY, W, 10, 'F');
+    doc.rect(0, H - 10, W, 10, 'F');
     doc.setFillColor(...ACCENT_GOLD);
-    doc.rect(0, footerY + 9.2, W, 0.8, 'F');
+    doc.rect(0, H - 0.8, W, 0.8, 'F');
     doc.setTextColor(...WHITE);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
-    doc.text('Submitted: ' + data.submittedAt + '   |   Reg No: ' + data.regNumber, W / 2, footerY + 6.2, { align: 'center' });
+    doc.text('Submitted: ' + data.submittedAt + '   |   Reg No: ' + data.regNumber, W / 2, H - 3.8, { align: 'center' });
 
     return doc.output('blob');
 }
