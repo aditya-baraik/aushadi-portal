@@ -1033,7 +1033,7 @@
                        <span class="arr" style="opacity:0;transition:all .2s;transform:translateX(0);color:var(--gold);font-size:.7rem;">›</span>Main Website
                     </a>
                     <!-- Privacy Policy — add your actual URL below -->
-                    <a href="http://aushadhiyog.com/privacy-policy" target="_blank"
+                    <a href="policy.html" onclick="sessionStorage.setItem('fromStep4','1')"
                        style="font-size:.82rem;color:rgba(255,255,255,.62);text-decoration:none;font-weight:500;transition:all .2s;letter-spacing:.02em;display:flex;align-items:center;gap:7px;"
                        onmouseover="this.style.color='#fff';this.querySelector('span.arr').style.opacity='1';this.querySelector('span.arr').style.transform='translateX(3px)'"
                        onmouseout="this.style.color='rgba(255,255,255,.62)';this.querySelector('span.arr').style.opacity='0';this.querySelector('span.arr').style.transform='translateX(0)'"
@@ -1041,7 +1041,7 @@
                        <span class="arr" style="opacity:0;transition:all .2s;transform:translateX(0);color:var(--gold);font-size:.7rem;">›</span>Privacy Policy
                     </a>
                     <!-- Terms & Conditions — replace YOUR_TERMS_URL with actual link -->
-                    <a href="YOUR_TERMS_URL_HERE" target="_blank"
+                    <a href="terms.html" onclick="sessionStorage.setItem('fromStep4','1')"
                        style="font-size:.82rem;color:rgba(255,255,255,.62);text-decoration:none;font-weight:500;transition:all .2s;letter-spacing:.02em;display:flex;align-items:center;gap:7px;"
                        onmouseover="this.style.color='#fff';this.querySelector('span.arr').style.opacity='1';this.querySelector('span.arr').style.transform='translateX(3px)'"
                        onmouseout="this.style.color='rgba(255,255,255,.62)';this.querySelector('span.arr').style.opacity='0';this.querySelector('span.arr').style.transform='translateX(0)'"
@@ -1120,13 +1120,6 @@ function setLanguage(lang) {
     currentLang = lang;
     document.getElementById('langModal').style.display = 'none';
     applyLanguage(lang);
-    // Agar policy/terms se wapas aaye hain toh step 4 pe jump karo
-    if (window.location.hash === '#step4') {
-        setTimeout(function() {
-            jumpToStep(4);
-            history.replaceState(null, '', window.location.pathname);
-        }, 50);
-    }
 }
 function switchLang(lang) {
     currentLang = lang;
@@ -1256,19 +1249,17 @@ function checkAllStepsDots() {
 
 // Next/Prev button logic is handled by app.js — no duplicate listener needed here.
 
-// ── POLICY/TERMS SE WAPAS AANE PAR STEP 4 PE AUTO-JUMP ──
+// ── Policy/Terms se wapas aane par Step 4 pe jump ──
 if (window.location.hash === '#step4') {
     document.addEventListener('DOMContentLoaded', function() {
-        // langModal hide karo — language selection skip
-        const modal = document.getElementById('langModal');
+        var modal = document.getElementById('langModal');
         if (modal) modal.style.display = 'none';
-        // app.js ka initializeForm + loadDraft settle hone ka wait
         setTimeout(function() {
             if (typeof jumpToStep === 'function') {
                 jumpToStep(4);
                 history.replaceState(null, '', window.location.pathname);
             }
-        }, 200);
+        }, 150);
     });
 }
 </script>
