@@ -7,6 +7,81 @@ const CONFIG = {
 };
 
 // ==========================================
+// AUTO-SAVE TO localStorage
+// ==========================================
+const DRAFT_KEY = 'aushadhiyog_draft';
+
+function saveDraft() {
+    try {
+        const form = document.getElementById('registrationForm');
+        if (!form) return;
+        const data = {};
+        form.querySelectorAll('input:not([type=file]):not([type=checkbox]), select, textarea').forEach(el => {
+            if (el.name) data[el.name] = el.value;
+        });
+        form.querySelectorAll('input[type=checkbox]').forEach(el => {
+            if (el.name) data[el.name] = el.checked;
+        });
+        data['__step'] = currentStep;
+        if (photoDataUrl) data['__photo'] = photoDataUrl;
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+    } catch(e) {}
+}
+
+function loadDraft() {
+    try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        const form = document.getElementById('registrationForm');
+        if (!form) return;
+        form.querySelectorAll('input:not([type=file]):not([type=checkbox]), select, textarea').forEach(el => {
+            if (el.name && data[el.name] !== undefined) el.value = data[el.name];
+        });
+        form.querySelectorAll('input[type=checkbox]').forEach(el => {
+            if (el.name && data[el.name] !== undefined) el.checked = data[el.name];
+        });
+        if (data['__photo']) {
+            photoDataUrl = data['__photo'];
+            const preview = document.getElementById('photoPreview');
+            const previewBox = document.getElementById('photoPreviewBox');
+            const uploadArea = document.getElementById('photoUploadArea');
+            if (preview && previewBox && uploadArea) {
+                preview.src = photoDataUrl;
+                previewBox.style.display = 'block';
+                uploadArea.style.display = 'none';
+            }
+        }
+        // Restore district dropdown
+        const stateVal = data['state'];
+        if (stateVal && typeof populateDistricts === 'function') {
+            populateDistricts(stateVal);
+            setTimeout(() => {
+                const distEl = document.querySelector('select[name="district"]');
+                if (distEl && data['district']) distEl.value = data['district'];
+            }, 50);
+        }
+        // Restore SHG name visibility
+        const shgSel = document.querySelector('select[name="shgMember"]');
+        if (shgSel) {
+            const shgGroup = document.getElementById('shgNameGroup');
+            if (shgGroup) shgGroup.style.display = shgSel.value === 'हाँ' ? 'block' : 'none';
+        }
+        // Restore prevExp visibility
+        const prevSel = document.querySelector('select[name="previousMedicinal"]');
+        if (prevSel) {
+            const prevBox = document.getElementById('prevExpDetails');
+            if (prevBox) prevBox.style.display = prevSel.value === 'हाँ' ? 'block' : 'none';
+        }
+        showNotification('📝 Draft restored from previous session', 'info');
+    } catch(e) {}
+}
+
+function clearDraft() {
+    try { localStorage.removeItem(DRAFT_KEY); } catch(e) {}
+}
+
+// ==========================================
 // GLOBAL VARIABLES
 // ==========================================
 let currentStep = 1;
@@ -25,12 +100,20 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeDOBAutoAge();
     initializePrevExpToggle();
     initializeTitleCase();
-    document.getElementById('registrationForm').addEventListener('change', function() {
+    initializeInlineValidation();
+
+    const form = document.getElementById('registrationForm');
+    form.addEventListener('change', function() {
         checkAllStepsDots();
+        saveDraft();
     });
-    document.getElementById('registrationForm').addEventListener('input', function() {
+    form.addEventListener('input', function() {
         checkAllStepsDots();
+        saveDraft();
     });
+
+    // Load draft after a short delay so district dropdown is ready
+    setTimeout(loadDraft, 100);
 });
 
 // ==========================================
@@ -125,8 +208,70 @@ function initializeTitleCase() {
 }
 
 // ==========================================
-// FORM STEP NAVIGATION
+// INLINE BLUR VALIDATION
 // ==========================================
+function initializeInlineValidation() {
+    const form = document.getElementById('registrationForm');
+
+    // Validate a single field on blur
+    function validateField(el) {
+        if (!el.hasAttribute('required')) return;
+        let invalid = false;
+        if (el.type === 'checkbox') {
+            invalid = !el.checked;
+        } else {
+            invalid = !el.value.trim();
+        }
+        // Pattern check
+        if (!invalid && el.pattern) {
+            const re = new RegExp('^(?:' + el.pattern + ')$');
+            if (!re.test(el.value.trim())) invalid = true;
+        }
+
+        if (invalid) {
+            el.classList.add('border-red-500');
+            el.style.boxShadow = '0 0 0 3px rgba(239,68,68,.15)';
+            // Show inline error message
+            let errEl = el.parentElement.querySelector('.inline-err');
+            if (!errEl) {
+                errEl = document.createElement('span');
+                errEl.className = 'inline-err';
+                errEl.style.cssText = 'display:block;font-size:.72rem;color:#dc2626;margin-top:.28rem;font-weight:600;';
+                el.parentElement.appendChild(errEl);
+            }
+            if (el.pattern && el.value.trim()) {
+                errEl.textContent = el.name === 'phone' ? 'Valid 10-digit number required' :
+                                    el.name === 'pincode' ? 'Valid 6-digit pin code required' : 'Invalid format';
+            } else {
+                errEl.textContent = currentLang === 'hi' ? 'यह फील्ड आवश्यक है' : 'This field is required';
+            }
+        } else {
+            el.classList.remove('border-red-500');
+            el.style.boxShadow = '';
+            const errEl = el.parentElement.querySelector('.inline-err');
+            if (errEl) errEl.remove();
+        }
+    }
+
+    // Delegate blur events
+    form.addEventListener('blur', function(e) {
+        const el = e.target;
+        if ((el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') && stepTouched[currentStep]) {
+            validateField(el);
+        }
+    }, true);
+
+    // Clear error on input/change
+    form.addEventListener('input', function(e) {
+        const el = e.target;
+        if (el.classList.contains('border-red-500') && el.value.trim()) {
+            el.classList.remove('border-red-500');
+            el.style.boxShadow = '';
+            const errEl = el.parentElement.querySelector('.inline-err');
+            if (errEl) errEl.remove();
+        }
+    });
+}
 function initializeForm() {
     document.getElementById('nextBtn').addEventListener('click', () => {
         stepTouched[currentStep] = true;
@@ -171,8 +316,63 @@ function updateFormDisplay() {
     document.getElementById('submitBtn').style.display = currentStep === totalSteps ? 'block' : 'none';
     document.getElementById('downloadPdfBtn').style.display = currentStep === totalSteps ? 'block' : 'none';
 
+    // Update progress % indicator
+    updateProgressPercent();
+
+    // Populate review panel when entering step 3.5 (review) — we use step 4 as the last real step
+    // Review step is shown between step 3 and step 4 using a special panel inside step 4
+    if (currentStep === totalSteps) {
+        populateReviewPanel();
+    }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(checkAllStepsDots, 50);
+}
+
+// ==========================================
+// PROGRESS PERCENTAGE INDICATOR
+// ==========================================
+function updateProgressPercent() {
+    const pct = Math.round(((currentStep - 1) / totalSteps) * 100);
+    const bar = document.getElementById('progressFillBar');
+    const txt = document.getElementById('progressPercentText');
+    if (bar) bar.style.width = pct + '%';
+    if (txt) txt.textContent = pct + '% complete';
+}
+
+// ==========================================
+// REVIEW PANEL POPULATION
+// ==========================================
+function populateReviewPanel() {
+    const panel = document.getElementById('reviewPanel');
+    if (!panel) return;
+    const fd = collectFormData();
+    const row = (lbl, val) => `<tr><td style="padding:4px 8px;font-weight:600;color:#3A342C;font-size:.78rem;white-space:nowrap;">${lbl}</td><td style="padding:4px 8px;font-size:.78rem;color:#181511;">${val || '—'}</td></tr>`;
+    const sec = (title) => `<tr><td colspan="2" style="padding:5px 8px 3px;font-weight:700;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:#1B3A1A;">${title}</td></tr>`;
+
+    const cropRows = fd.crops.map((c,i) => row(`Crop ${i+1}`, `${c.name} (${c.sowingMonth} → ${c.harvestMonth})`)).join('');
+
+    panel.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;border:1px solid #DDD3C0;border-radius:.5rem;overflow:hidden;">
+        ${sec('1. Personal Information')}
+        ${row('Full Name', fd.fullName)}
+        ${row('Father/Husband', fd.fatherName)}
+        ${row('DOB / Age', fd.dob + ' / ' + fd.age + ' yrs')}
+        ${row('Gender', fd.gender)}
+        ${row('Mobile', fd.phone)}
+        ${sec('2. Address')}
+        ${row('State / District', fd.state + ' / ' + fd.district)}
+        ${row('Block / Panchayat', fd.block + ' / ' + fd.panchayat)}
+        ${row('Village / Pin', fd.village + ' / ' + fd.pincode)}
+        ${sec('3. Land & SHG')}
+        ${row('Irrigated (Acre)', fd.irrigatedArea + ' — ' + fd.irrigatedOwnership)}
+        ${row('Unirrigated (Acre)', fd.unirrigatedArea + ' — ' + fd.unirrigatedOwnership)}
+        ${row('SHG/FPO Member', fd.shgMember + (fd.shgName ? ' (' + fd.shgName + ')' : ''))}
+        ${sec('4. Crops & Experience')}
+        ${cropRows}
+        ${row('Prev. Medicinal Exp.', fd.previousMedicinal)}
+        ${fd.prevExpDescription ? row('Details', fd.prevExpDescription) : ''}
+      </table>`;
 }
 
 // ==========================================
@@ -378,6 +578,7 @@ async function handleFormSubmit(e) {
         const formData = collectFormData();
         const pdfBlob = await generatePDF(formData);
         await sendPDFToTelegram(pdfBlob, formData);
+        clearDraft();
         showNotification('✅ पंजीकरण सफलतापूर्वक जमा हो गया!', 'success');
         setTimeout(() => { window.location.reload(); }, 2500);
     } catch (error) {
@@ -389,177 +590,216 @@ async function handleFormSubmit(e) {
 }
 
 // ==========================================
-// PDF GENERATION
+// PDF GENERATION — Fixed Layout
 // ==========================================
 async function generatePDF(data) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'mm', 'a4');
     const W = 210;
-    const margin = 10;
-    let y = 22;
-    const BRAND_R = 27, BRAND_G = 58, BRAND_B = 26;
+    const M = 10; // margin
+    const BRAND = [27, 58, 26];
+    const LIGHT_GREEN = [240, 253, 244];
+    const BORDER = [200, 200, 200];
+    let y = 0;
 
-    function checkPage(requiredSpace) {
-        if (y + requiredSpace > 282) { doc.addPage(); y = 15; }
-    }
-    function sectionTitle(title, currentY) {
-        doc.setFillColor(BRAND_R, BRAND_G, BRAND_B);
-        doc.rect(margin, currentY, W - margin * 2, 7, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
-        doc.text(title, margin + 2, currentY + 4.8);
-        doc.setTextColor(0, 0, 0);
-        return currentY + 10;
-    }
-    function field(label, value, x, currentY, labelWidth = 30, valueWidth = 50) {
-        doc.setFontSize(7.5);
-        doc.setFont('helvetica', 'bold');
-        doc.text(label, x, currentY);
-        doc.setFont('helvetica', 'normal');
-        const textValue = String(value || '');
-        const wrapped = doc.splitTextToSize(textValue, valueWidth);
-        doc.text(wrapped, x + labelWidth, currentY);
-        return currentY;
-    }
-
-    // HEADER
-    doc.setFillColor(BRAND_R, BRAND_G, BRAND_B);
-    doc.rect(0, 0, W, 18, 'F');
+    // ── HEADER BAND ──
+    doc.setFillColor(...BRAND);
+    doc.rect(0, 0, W, 20, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text('AUSHADHIYOG PRIVATE LIMITED', W / 2, 8, { align: 'center' });
-    doc.setFontSize(9);
-    doc.text('Kisan Panjikaran Prapattra', W / 2, 14, { align: 'center' });
+    doc.setFontSize(13);
+    doc.text('AUSHADHIYOG PRIVATE LIMITED', W / 2, 8.5, { align: 'center' });
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Kisan Panjikaran Prapattra', W / 2, 14.5, { align: 'center' });
     doc.setTextColor(0, 0, 0);
+    y = 22;
 
-    // PHOTO — top-right, outside section 1, with a border box
-    const photoX = W - margin - 24;
-    const photoY = 20;
-    const photoW = 22;
-    const photoH = 28;
-    doc.setDrawColor(180, 180, 180);
-    doc.rect(photoX - 1, photoY - 1, photoW + 2, photoH + 2);
+    // ── PHOTO — top-right, beside section 1 ──
+    const photoX = W - M - 26;
+    const photoY = y;
+    const photoW = 24;
+    const photoH = 30;
     if (data.photo) {
-        try { doc.addImage(data.photo, 'JPEG', photoX, photoY, photoW, photoH, undefined, 'FAST'); }
-        catch (e) { console.error('Photo error:', e); }
+        try {
+            doc.setDrawColor(...BRAND);
+            doc.setLineWidth(0.5);
+            doc.rect(photoX - 0.5, photoY - 0.5, photoW + 1, photoH + 1);
+            doc.addImage(data.photo, 'JPEG', photoX, photoY, photoW, photoH, undefined, 'FAST');
+        } catch (e) { console.error('Photo error:', e); }
+    } else {
+        doc.setDrawColor(...BORDER);
+        doc.setFillColor(245, 240, 232);
+        doc.rect(photoX, photoY, photoW, photoH, 'FD');
+        doc.setFontSize(6); doc.setTextColor(150, 150, 150);
+        doc.text('Photo', photoX + photoW / 2, photoY + photoH / 2, { align: 'center' });
+        doc.setTextColor(0, 0, 0);
     }
 
-    // SECTION 1 — col widths shrunk so text stays left of photo
-    y = sectionTitle('1. Vyaktigat Jaankaari (Personal Information)', y);
-    const col1X = margin + 2;
-    const col2X = margin + 2 + 80;
-    const safeWidth = photoX - col1X - 4; // text area left of photo
-    field('Poora Naam:', data.fullName, col1X, y, 28, safeWidth - 28); y += 6;
-    field('Pita/Pati ka Naam:', data.fatherName, col1X, y, 35, safeWidth - 35); y += 6;
-    field('Janm Tithi:', data.dob, col1X, y, 22, 30);
-    field('Aayu:', data.age + ' varsh', col2X, y, 12, 20); y += 6;
-    field('Ling:', data.gender, col1X, y, 12, 30);
-    field('Mobile:', data.phone, col2X, y, 16, 38); y += 6;
-    if (data.altPhone) { field('Alt Mobile:', data.altPhone, col1X, y, 22, 38); y += 6; }
-    // ensure y clears the photo before next section
-    const photoBottom = photoY + photoH + 3;
-    if (y < photoBottom) y = photoBottom;
+    // ── SECTION HEADER helper ──
+    function secHeader(title, yPos) {
+        doc.setFillColor(...BRAND);
+        doc.rect(M, yPos, W - M * 2, 6.5, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.text(title, M + 2, yPos + 4.3);
+        doc.setTextColor(0, 0, 0);
+        return yPos + 6.5;
+    }
 
-    // SECTION 2
-    y = sectionTitle('2. Pata Vivaran (Address Details)', y);
-    field('Rajya:', data.state, col1X, y, 14, 52);
-    field('Jila:', data.district, col2X, y, 12, 48); y += 6;
-    field('Prakhanda:', data.block, col1X, y, 20, 45);
-    field('Panchayat:', data.panchayat, col2X, y, 22, 38); y += 6;
-    field('Gram:', data.village, col1X, y, 12, 52);
-    field('Pin Code:', data.pincode, col2X, y, 18, 38); y += 8;
+    // ── ROW helper: label + value in a cell ──
+    function rowPair(label, value, x, yPos, labelW, cellW, rowH = 5.5) {
+        doc.setDrawColor(...BORDER);
+        doc.rect(x, yPos, cellW, rowH);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7);
+        doc.text(label, x + 1.5, yPos + 3.6);
+        doc.setFont('helvetica', 'normal');
+        const txt = doc.splitTextToSize(String(value || '—'), cellW - labelW - 2);
+        doc.text(txt[0] || '', x + labelW + 1.5, yPos + 3.6);
+        return yPos;
+    }
 
-    // SECTION 3
-    y = sectionTitle('3. Bhoomi Vivaran (Land Details)', y);
-    doc.setFillColor(240, 253, 244);
-    doc.rect(margin, y, W - margin * 2, 5.5, 'F');
-    doc.setFontSize(7.5); doc.setFont('helvetica', 'bold');
-    const col = [margin, margin + 45, margin + 80];
-    doc.text('Bhoomi Prakar', col[0] + 1, y + 3.8);
-    doc.text('Kshetra (Acre)', col[1] + 1, y + 3.8);
-    doc.text('Swamitva', col[2] + 1, y + 3.8);
-    doc.setDrawColor(180, 180, 180);
-    doc.rect(margin, y, W - margin * 2, 5.5); y += 5.5;
+    // ── Two-column info row (no borders, plain) ──
+    function infoRow(label, value, x, yPos, labelW = 32) {
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
+        doc.text(label, x, yPos);
+        doc.setFont('helvetica', 'normal');
+        doc.text(String(value || '—'), x + labelW, yPos);
+    }
+
+    // ──────────────── SECTION 1: Personal ────────────────
+    const contentW = W - M * 2 - photoW - 4; // width available left of photo
+    y = secHeader('1. Vyaktigat Jaankaari (Personal Information)', y);
+
+    const s1y = y;
+    infoRow('Poora Naam:', data.fullName, M + 2, y + 4.5, 33);       y += 5.5;
+    infoRow('Pita/Pati ka Naam:', data.fatherName, M + 2, y + 4.5, 33); y += 5.5;
+    infoRow('Janm Tithi:', data.dob, M + 2, y + 4.5, 22);
+    infoRow('Aayu:', data.age + ' varsh', M + 2 + 65, y + 4.5, 14);   y += 5.5;
+    infoRow('Ling:', data.gender, M + 2, y + 4.5, 14);
+    infoRow('Mobile:', data.phone, M + 2 + 65, y + 4.5, 16);          y += 5.5;
+
+    // Draw a light bounding rect around section 1 text area
+    doc.setDrawColor(...BORDER);
+    doc.setLineWidth(0.3);
+    doc.rect(M, s1y, contentW + 2, y - s1y);
+    y = Math.max(y, photoY + photoH) + 3;
+
+    // ──────────────── SECTION 2: Address ────────────────
+    y = secHeader('2. Pata Vivaran (Address Details)', y);
+    const aY = y;
+    const half = (W - M * 2) / 2;
+    rowPair('Rajya:', data.state, M, y, 14, half);
+    rowPair('Jila:', data.district, M + half, y, 11, half); y += 5.5;
+    rowPair('Prakhanda:', data.block, M, y, 22, half);
+    rowPair('Panchayat:', data.panchayat, M + half, y, 22, half); y += 5.5;
+    rowPair('Gram:', data.village, M, y, 12, half);
+    rowPair('Pin Code:', data.pincode, M + half, y, 20, half); y += 7;
+
+    // ──────────────── SECTION 3: Land ────────────────
+    y = secHeader('3. Bhoomi Vivaran (Land Details)', y);
+    const thirds = (W - M * 2) / 3;
+    // Table header
+    doc.setFillColor(...LIGHT_GREEN);
+    doc.rect(M, y, W - M * 2, 5.5, 'FD');
+    doc.setDrawColor(...BORDER);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
+    doc.text('Bhoomi Prakar', M + 2, y + 3.8);
+    doc.text('Kshetra (Acre)', M + thirds + 2, y + 3.8);
+    doc.text('Swamitva', M + thirds * 2 + 2, y + 3.8);
+    doc.rect(M, y, W - M * 2, 5.5); y += 5.5;
     doc.setFont('helvetica', 'normal');
-    doc.rect(margin, y, W - margin * 2, 5.5);
-    doc.text('Sinchai (Irrigated)', col[0] + 1, y + 3.8);
-    doc.text(data.irrigatedArea, col[1] + 1, y + 3.8);
-    doc.text(data.irrigatedOwnership, col[2] + 1, y + 3.8); y += 5.5;
-    doc.rect(margin, y, W - margin * 2, 5.5);
-    doc.text('Asinchai (Unirrigated)', col[0] + 1, y + 3.8);
-    doc.text(data.unirrigatedArea, col[1] + 1, y + 3.8);
-    doc.text(data.unirrigatedOwnership, col[2] + 1, y + 3.8); y += 8;
+    [['Sinchai (Irrigated)', data.irrigatedArea, data.irrigatedOwnership],
+     ['Asinchai (Unirrigated)', data.unirrigatedArea, data.unirrigatedOwnership]].forEach(r => {
+        doc.rect(M, y, W - M * 2, 5.5);
+        doc.text(r[0], M + 2, y + 3.8);
+        doc.text(String(r[1]), M + thirds + 2, y + 3.8);
+        doc.text(String(r[2] || '—'), M + thirds * 2 + 2, y + 3.8);
+        y += 5.5;
+    }); y += 3;
 
-    // SECTION 4
-    y = sectionTitle('4. Samuh / Sangathan Judav (SHG/FPO)', y);
-    field('SHG/FPO Sadasya:', data.shgMember, col1X, y, 32, 20);
-    if (data.shgMember === 'हाँ' && data.shgName) { field('Naam:', data.shgName, col2X, y, 12, 52); }
+    // ──────────────── SECTION 4: SHG ────────────────
+    y = secHeader('4. Samuh / Sangathan Judav (SHG/FPO)', y);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
+    doc.text('SHG/FPO Sadasya:', M + 2, y + 4.5);
+    doc.setFont('helvetica', 'normal');
+    doc.text(data.shgMember + (data.shgMember === 'हाँ' && data.shgName ? ' — ' + data.shgName : ''), M + 34, y + 4.5);
     y += 8;
 
-    // SECTION 5
-    y = sectionTitle('5. Prastaavit Fasal Vivaran (Crop Details)', y);
-    doc.setFillColor(240, 253, 244);
-    doc.rect(margin, y, W - margin * 2, 5.5, 'F');
-    doc.setFontSize(7.5); doc.setFont('helvetica', 'bold');
-    const cropCols = [margin, margin + 60, margin + 100];
-    doc.text('Fasal ka Naam', cropCols[0] + 1, y + 3.8);
-    doc.text('Buwai Maah', cropCols[1] + 1, y + 3.8);
-    doc.text('Katai Maah', cropCols[2] + 1, y + 3.8);
-    doc.setDrawColor(180, 180, 180);
-    doc.rect(margin, y, W - margin * 2, 5.5); y += 5.5;
+    // ──────────────── SECTION 5: Crops ────────────────
+    y = secHeader('5. Prastaavit Fasal Vivaran (Crop Details)', y);
+    const cropCols = [M, M + 65, M + 110];
+    doc.setFillColor(...LIGHT_GREEN);
+    doc.rect(M, y, W - M * 2, 5.5, 'FD');
+    doc.setDrawColor(...BORDER);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
+    doc.text('Fasal ka Naam', cropCols[0] + 2, y + 3.8);
+    doc.text('Buwai Maah', cropCols[1] + 2, y + 3.8);
+    doc.text('Katai Maah', cropCols[2] + 2, y + 3.8);
+    doc.rect(M, y, W - M * 2, 5.5); y += 5.5;
     doc.setFont('helvetica', 'normal');
-    data.crops.forEach((crop, i) => {
-        doc.rect(margin, y, W - margin * 2, 5.5);
-        doc.text(String(i + 1) + '. ' + (crop.name || ''), cropCols[0] + 1, y + 3.8);
-        doc.text(crop.sowingMonth || '', cropCols[1] + 1, y + 3.8);
-        doc.text(crop.harvestMonth || '', cropCols[2] + 1, y + 3.8);
-        y += 5.5;
-    }); y += 4;
-
-    // SECTION 6
-    y = sectionTitle('6. Poorv Anubhav (Previous Experience)', y);
-    field('Kya aapne pehle Aushadhiya Fasal ugaai hai?', data.previousMedicinal, col1X, y, 82, 20); y += 6;
-    if (data.previousMedicinal === 'हाँ' && data.prevExpDescription) {
-        doc.setFontSize(7.5); doc.setFont('helvetica', 'bold');
-        doc.text('Vivaran:', col1X, y);
-        doc.setFont('helvetica', 'normal');
-        const lines = doc.splitTextToSize(data.prevExpDescription, W - margin * 2 - 25);
-        doc.text(lines, col1X + 20, y);
-        y += lines.length * 4.5 + 2;
+    if (data.crops.length === 0) {
+        doc.rect(M, y, W - M * 2, 5.5);
+        doc.text('1.', cropCols[0] + 2, y + 3.8); y += 5.5;
+    } else {
+        data.crops.forEach((crop, i) => {
+            doc.rect(M, y, W - M * 2, 5.5);
+            doc.text((i + 1) + '. ' + (crop.name || ''), cropCols[0] + 2, y + 3.8);
+            doc.text(crop.sowingMonth || '', cropCols[1] + 2, y + 3.8);
+            doc.text(crop.harvestMonth || '', cropCols[2] + 2, y + 3.8);
+            y += 5.5;
+        });
     }
-    y += 2;
+    y += 3;
 
-    // SECTION 7
-    y = sectionTitle('7. Niyam Evam Shartein (Terms & Conditions)', y);
-    doc.setFontSize(7); doc.setFont('helvetica', 'normal');
+    // ──────────────── SECTION 6: Prev Experience ────────────────
+    y = secHeader('6. Poorv Anubhav (Previous Experience)', y);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
+    doc.text('Kya aapne pehle Aushadhiya Fasal ugaai hai?', M + 2, y + 4.5);
+    doc.setFont('helvetica', 'normal');
+    doc.text(data.previousMedicinal || '—', M + 82, y + 4.5);
+    y += 7;
+    if (data.previousMedicinal === 'हाँ' && data.prevExpDescription) {
+        const lines = doc.splitTextToSize(data.prevExpDescription, W - M * 2 - 6);
+        doc.setFontSize(7);
+        doc.text(lines, M + 2, y);
+        y += lines.length * 4 + 3;
+    }
+
+    // ──────────────── SECTION 7: Terms ────────────────
+    y = secHeader('7. Niyam Evam Shartein (Terms & Conditions)', y);
+    doc.setFontSize(6.8); doc.setFont('helvetica', 'normal');
+    doc.setFillColor(248, 253, 248);
     const termsText = 'Main yah ghoshit karta/karti hun ki di gayi sabhi jaankaari satya hai. Main company ke nirdeshanusar kheti karunga/karungi aur gunvatta maankon ka paalan karunga/karungi. Main utpada ko praathamikta se company ko bechunga/bechungi. Yadi koi jaankaari galat payi jaati hai, to panjikaran nirasht kiya ja sakta hai.';
-    const termsLines = doc.splitTextToSize(termsText, W - margin * 2 - 4);
-    doc.text(termsLines, col1X + 2, y);
-    y += termsLines.length * 4 + 5;
+    const termsLines = doc.splitTextToSize(termsText, W - M * 2 - 6);
+    const termsH = termsLines.length * 3.8 + 5;
+    doc.rect(M, y, W - M * 2, termsH, 'F');
+    doc.text(termsLines, M + 3, y + 4);
+    y += termsH + 3;
 
-    // SECTION 8 — Signatures (kept together on same page)
-    checkPage(55);
-    y = sectionTitle('8. Hastaakshar (Signatures)', y);
-    y += 5;
-    const sigW = (W - margin * 2 - 6) / 2;
-    doc.setDrawColor(120, 120, 120);
-    doc.rect(margin, y, sigW, 18);
-    doc.rect(margin + sigW + 6, y, sigW, 18);
+    // ──────────────── SECTION 8: Signatures ────────────────
+    y = secHeader('8. Hastaakshar (Signatures)', y);
+    y += 3;
+    const sigW = (W - M * 2 - 6) / 2;
+    doc.setDrawColor(...BORDER);
+    doc.setLineWidth(0.4);
+    doc.rect(M, y, sigW, 18);
+    doc.rect(M + sigW + 6, y, sigW, 18);
     doc.setFontSize(7); doc.setFont('helvetica', 'bold');
-    doc.text('Naam: ' + data.fullName, margin + 2, y + 16);
-    doc.text('Kisan Hastaakshar / Angutha Nishan', margin + sigW / 2, y + 21, { align: 'center' });
-    doc.text('Company Pratinidhi', margin + sigW + 6 + sigW / 2, y + 21, { align: 'center' });
+    doc.text('Naam: ' + data.fullName, M + 2, y + 15);
+    doc.setFontSize(6.5); doc.setFont('helvetica', 'normal');
+    doc.text('Kisan Hastaakshar / Angutha Nishan', M + sigW / 2, y + 21, { align: 'center' });
+    doc.text('Company Pratinidhi', M + sigW + 6 + sigW / 2, y + 21, { align: 'center' });
     y += 26;
 
-    // FOOTER — pinned to bottom of page, no gap
-    const pageH = doc.internal.pageSize.height;
-    doc.setFillColor(BRAND_R, BRAND_G, BRAND_B);
-    doc.rect(0, pageH - 9, W, 9, 'F');
+    // ──────────────── FOOTER ────────────────
+    doc.setFillColor(...BRAND);
+    doc.rect(0, y, W, 8, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(6.5); doc.setFont('helvetica', 'normal');
-    doc.text(`Submitted: ${data.submittedAt} | Reg No: ${data.regNumber}`, W / 2, pageH - 3.5, { align: 'center' });
+    doc.text('Submitted: ' + data.submittedAt + '  |  Reg No: ' + data.regNumber, W / 2, y + 5, { align: 'center' });
 
     return doc.output('blob');
 }
