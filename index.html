@@ -575,6 +575,16 @@
                 <div class="step-dot"></div>
             </div>
         </div>
+        <!-- Progress % bar -->
+        <div style="margin-top:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+                <span id="progressPercentText" style="font-size:.72rem;font-weight:700;color:var(--brand);letter-spacing:.04em;">0% complete</span>
+                <span style="font-size:.68rem;color:var(--muted2);" data-hi="4 चरण" data-en="4 Steps">4 Steps</span>
+            </div>
+            <div style="height:5px;background:var(--border);border-radius:99px;overflow:hidden;">
+                <div id="progressFillBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--brand-mid),var(--brand-vivid));border-radius:99px;transition:width .45s cubic-bezier(.4,0,.2,1);"></div>
+            </div>
+        </div>
     </div>
 
     <!-- Form -->
@@ -860,7 +870,15 @@
                 <span data-hi="फोटो और सत्यापन" data-en="Photo & Verification">फोटो और सत्यापन</span>
             </h2>
 
-            <!-- Photo Upload -->
+            <!-- Review Summary -->
+            <div style="margin-bottom:1.75rem;border:1.5px solid var(--border);border-radius:1rem;overflow:hidden;box-shadow:var(--shadow-sm);">
+                <div style="background:linear-gradient(135deg,var(--brand-mid),var(--brand));padding:.75rem 1.1rem;display:flex;align-items:center;gap:.55rem;">
+                    <span style="font-size:1rem;">📋</span>
+                    <span style="font-weight:800;font-size:.82rem;letter-spacing:.05em;text-transform:uppercase;color:#fff;" data-hi="आपकी जानकारी की समीक्षा करें" data-en="Review Your Information">आपकी जानकारी की समीक्षा करें</span>
+                    <span style="margin-left:auto;font-size:.7rem;color:rgba(255,255,255,.65);font-weight:500;" data-hi="कृपया सुनिश्चित करें कि सब सही है" data-en="Please verify all details are correct">कृपया सुनिश्चित करें कि सब सही है</span>
+                </div>
+                <div id="reviewPanel" style="padding:.5rem;background:#fff;"></div>
+            </div>
             <div class="mb-8">
                 <h3 class="section-heading" data-hi="📷 पासपोर्ट साइज फोटो *" data-en="📷 Passport Size Photo *">📷 पासपोर्ट साइज फोटो *</h3>
                 <div class="info-banner-blue mb-4">
