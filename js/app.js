@@ -290,8 +290,10 @@ function initializeForm() {
 }
 
 function updateFormDisplay() {
-    document.querySelectorAll('.form-step').forEach((step, index) => {
-        step.classList.toggle('active', index + 1 === currentStep);
+    // Only toggle form-step divs with data-step 1–4 (not reviewStep)
+    document.querySelectorAll('.form-step[data-step]').forEach((step) => {
+        const s = parseInt(step.getAttribute('data-step'));
+        if (s <= totalSteps) step.classList.toggle('active', s === currentStep);
     });
 
     document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
@@ -314,19 +316,79 @@ function updateFormDisplay() {
     document.getElementById('prevBtn').style.display = currentStep === 1 ? 'none' : 'block';
     document.getElementById('nextBtn').style.display = currentStep === totalSteps ? 'none' : 'block';
     document.getElementById('submitBtn').style.display = currentStep === totalSteps ? 'block' : 'none';
-    document.getElementById('downloadPdfBtn').style.display = currentStep === totalSteps ? 'block' : 'none';
+    // downloadPdfBtn is hidden in the nav bar — it lives in the review screen now
+    document.getElementById('downloadPdfBtn').style.display = 'none';
 
     // Update progress % indicator
     updateProgressPercent();
 
-    // Populate review panel when entering step 3.5 (review) — we use step 4 as the last real step
-    // Review step is shown between step 3 and step 4 using a special panel inside step 4
-    if (currentStep === totalSteps) {
-        populateReviewPanel();
-    }
-
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(checkAllStepsDots, 50);
+}
+
+// ==========================================
+// REVIEW MODE — opens after Submit click
+// ==========================================
+function openReviewMode() {
+    // Validate first
+    if (!validateAllSteps()) {
+        showNotification('कृपया सभी टैब के * आवश्यक फील्ड भरें', 'error');
+        for (let i = 1; i <= totalSteps; i++) {
+            const stepEl = document.querySelector(`.form-step[data-step="${i}"]`);
+            const inputs = stepEl.querySelectorAll('input[required], select[required], textarea[required]');
+            let incomplete = false;
+            inputs.forEach(inp => {
+                if (inp.type === 'checkbox') { if (!inp.checked) incomplete = true; return; }
+                if (!inp.value.trim()) incomplete = true;
+            });
+            if (i === 4 && !photoDataUrl) incomplete = true;
+            if (incomplete) { currentStep = i; updateFormDisplay(); break; }
+        }
+        return;
+    }
+    if (!photoDataUrl) {
+        showNotification('कृपया पासपोर्ट साइज फोटो अपलोड करें', 'error');
+        return;
+    }
+
+    // Hide all regular form steps + nav
+    document.querySelectorAll('.form-step[data-step]').forEach(s => { s.classList.remove('active'); s.style.display = 'none'; });
+    document.getElementById('reviewStep').style.display = 'block';
+    document.getElementById('prevBtn').style.display = 'none';
+    document.getElementById('nextBtn').style.display = 'none';
+    document.getElementById('submitBtn').style.display = 'none';
+    document.getElementById('downloadPdfBtn').style.display = 'none';
+
+    // Populate review panel
+    populateReviewPanel();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function exitReviewMode() {
+    // Hide review step, restore step 4
+    document.getElementById('reviewStep').style.display = 'none';
+    document.querySelectorAll('.form-step[data-step]').forEach(s => { s.style.display = ''; });
+    currentStep = totalSteps;
+    updateFormDisplay();
+}
+
+async function confirmAndSubmit() {
+    const btn = document.getElementById('confirmRegBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="animate-spin inline-block mr-2">⏳</span> जमा हो रहा है...';
+    try {
+        const formData = collectFormData();
+        const pdfBlob = await generatePDF(formData);
+        await sendPDFToTelegram(pdfBlob, formData);
+        clearDraft();
+        showNotification('✅ पंजीकरण सफलतापूर्वक जमा हो गया!', 'success');
+        setTimeout(() => { window.location.reload(); }, 2500);
+    } catch (error) {
+        console.error('Submission error:', error);
+        showNotification('❌ त्रुटि: ' + error.message, 'error');
+        btn.disabled = false;
+        btn.innerHTML = currentLang === 'hi' ? '✅ पंजीकरण की पुष्टि करें' : '✅ Confirm Registration';
+    }
 }
 
 // ==========================================
@@ -544,262 +606,333 @@ function collectFormData() {
 }
 
 // ==========================================
-// FORM SUBMISSION
+// FORM SUBMISSION — now handled by confirmAndSubmit after review
 // ==========================================
 async function handleFormSubmit(e) {
     e.preventDefault();
-
-    if (!validateAllSteps()) {
-        showNotification('कृपया सभी टैब के * आवश्यक फील्ड भरें', 'error');
-        for (let i = 1; i <= totalSteps; i++) {
-            const stepEl = document.querySelector(`.form-step[data-step="${i}"]`);
-            const inputs = stepEl.querySelectorAll('input[required], select[required], textarea[required]');
-            let incomplete = false;
-            inputs.forEach(inp => {
-                if (inp.type === 'checkbox') { if (!inp.checked) incomplete = true; return; }
-                if (!inp.value.trim()) incomplete = true;
-            });
-            if (i === 4 && !photoDataUrl) incomplete = true;
-            if (incomplete) { currentStep = i; updateFormDisplay(); break; }
-        }
-        return;
-    }
-
-    if (!photoDataUrl) {
-        showNotification('कृपया पासपोर्ट साइज फोटो अपलोड करें', 'error');
-        return;
-    }
-
-    const submitBtn = document.getElementById('submitBtn');
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="animate-spin inline-block mr-2">⏳</span> जमा हो रहा है...';
-
-    try {
-        const formData = collectFormData();
-        const pdfBlob = await generatePDF(formData);
-        await sendPDFToTelegram(pdfBlob, formData);
-        clearDraft();
-        showNotification('✅ पंजीकरण सफलतापूर्वक जमा हो गया!', 'success');
-        setTimeout(() => { window.location.reload(); }, 2500);
-    } catch (error) {
-        console.error('Submission error:', error);
-        showNotification('❌ त्रुटि: ' + error.message, 'error');
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = currentLang === 'hi' ? '🚀 पंजीकरण जमा करें' : '🚀 Submit Registration';
-    }
+    openReviewMode();
 }
 
 // ==========================================
-// PDF GENERATION — Fixed Layout
+// PDF GENERATION — Professional Premium Layout
 // ==========================================
 async function generatePDF(data) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'mm', 'a4');
-    const W = 210;
-    const M = 10; // margin
-    const BRAND = [27, 58, 26];
-    const LIGHT_GREEN = [240, 253, 244];
-    const BORDER = [200, 200, 200];
+    const W = 210, H = 297;
+    const ML = 14, MR = 14; // margins
+    const CW = W - ML - MR; // content width
+
+    // ── COLOUR PALETTE ──
+    const DARK_GREEN   = [27, 58, 26];
+    const MID_GREEN    = [45, 92, 44];
+    const LIGHT_GREEN  = [240, 252, 240];
+    const ACCENT_GOLD  = [200, 168, 75];
+    const CREAM        = [245, 240, 232];
+    const WHITE        = [255, 255, 255];
+    const GREY_TEXT    = [90, 85, 78];
+    const DARK_TEXT    = [24, 21, 17];
+    const BORDER_GREY  = [210, 210, 210];
+    const ROW_ALT      = [250, 253, 250];
+
     let y = 0;
 
-    // ── HEADER BAND ──
-    doc.setFillColor(...BRAND);
-    doc.rect(0, 0, W, 20, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(13);
-    doc.text('AUSHADHIYOG PRIVATE LIMITED', W / 2, 8.5, { align: 'center' });
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Kisan Panjikaran Prapattra', W / 2, 14.5, { align: 'center' });
-    doc.setTextColor(0, 0, 0);
-    y = 22;
+    // ════════════════════════════════
+    // HEADER — deep green band
+    // ════════════════════════════════
+    // Full green header
+    doc.setFillColor(...DARK_GREEN);
+    doc.rect(0, 0, W, 28, 'F');
 
-    // ── PHOTO — top-right, beside section 1 ──
-    const photoX = W - M - 26;
+    // Subtle gold accent line at very top
+    doc.setFillColor(...ACCENT_GOLD);
+    doc.rect(0, 0, W, 1.2, 'F');
+
+    // Company name
+    doc.setTextColor(...WHITE);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(15);
+    doc.text('AUSHADHIYOG PRIVATE LIMITED', W / 2, 11, { align: 'center' });
+
+    // Subtitle
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(220, 215, 190);
+    doc.text('Kisan Panjikaran Prapattra  |  Farmer Registration Form', W / 2, 18.5, { align: 'center' });
+
+    // Gold accent line at bottom of header
+    doc.setFillColor(...ACCENT_GOLD);
+    doc.rect(0, 26.5, W, 0.9, 'F');
+
+    y = 32;
+
+    // ════════════════════════════════
+    // PHOTO — positioned top-right beside section 1
+    // ════════════════════════════════
+    const photoW = 26, photoH = 32;
+    const photoX = W - MR - photoW;
     const photoY = y;
-    const photoW = 24;
-    const photoH = 30;
+
     if (data.photo) {
         try {
-            doc.setDrawColor(...BRAND);
-            doc.setLineWidth(0.5);
-            doc.rect(photoX - 0.5, photoY - 0.5, photoW + 1, photoH + 1);
+            // Outer border (green)
+            doc.setDrawColor(...DARK_GREEN);
+            doc.setLineWidth(0.8);
+            doc.roundedRect(photoX - 1, photoY - 1, photoW + 2, photoH + 2, 1, 1);
             doc.addImage(data.photo, 'JPEG', photoX, photoY, photoW, photoH, undefined, 'FAST');
-        } catch (e) { console.error('Photo error:', e); }
+        } catch (e) { console.error('Photo:', e); }
     } else {
-        doc.setDrawColor(...BORDER);
-        doc.setFillColor(245, 240, 232);
-        doc.rect(photoX, photoY, photoW, photoH, 'FD');
-        doc.setFontSize(6); doc.setTextColor(150, 150, 150);
-        doc.text('Photo', photoX + photoW / 2, photoY + photoH / 2, { align: 'center' });
-        doc.setTextColor(0, 0, 0);
+        doc.setFillColor(...CREAM);
+        doc.setDrawColor(...DARK_GREEN);
+        doc.setLineWidth(0.6);
+        doc.roundedRect(photoX, photoY, photoW, photoH, 1, 1, 'FD');
+        doc.setFontSize(6.5); doc.setTextColor(...GREY_TEXT);
+        doc.text('PHOTO', photoX + photoW / 2, photoY + photoH / 2, { align: 'center' });
     }
+    // "Passport Photo" label below
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6); doc.setTextColor(...GREY_TEXT);
+    doc.text('Passport Size Photo', photoX + photoW / 2, photoY + photoH + 4, { align: 'center' });
 
     // ── SECTION HEADER helper ──
     function secHeader(title, yPos) {
-        doc.setFillColor(...BRAND);
-        doc.rect(M, yPos, W - M * 2, 6.5, 'F');
-        doc.setTextColor(255, 255, 255);
+        doc.setFillColor(...DARK_GREEN);
+        doc.rect(ML, yPos, CW, 7, 'F');
+        // Left accent bar
+        doc.setFillColor(...ACCENT_GOLD);
+        doc.rect(ML, yPos, 2.5, 7, 'F');
+        doc.setTextColor(...WHITE);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(8);
-        doc.text(title, M + 2, yPos + 4.3);
-        doc.setTextColor(0, 0, 0);
-        return yPos + 6.5;
+        doc.text(title, ML + 5, yPos + 4.7);
+        doc.setTextColor(...DARK_TEXT);
+        return yPos + 7;
     }
 
-    // ── ROW helper: label + value in a cell ──
-    function rowPair(label, value, x, yPos, labelW, cellW, rowH = 5.5) {
-        doc.setDrawColor(...BORDER);
+    // ── TWO-COLUMN ROW helper ──
+    function dataRow(label, value, x, yPos, labelW, cellW, rowH = 6, isAlt = false) {
+        if (isAlt) { doc.setFillColor(...ROW_ALT); doc.rect(x, yPos, cellW, rowH, 'F'); }
+        doc.setDrawColor(...BORDER_GREY);
+        doc.setLineWidth(0.25);
         doc.rect(x, yPos, cellW, rowH);
+        // Label
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(7);
-        doc.text(label, x + 1.5, yPos + 3.6);
+        doc.setTextColor(...GREY_TEXT);
+        doc.text(label, x + 2, yPos + 3.9);
+        // Value
         doc.setFont('helvetica', 'normal');
-        const txt = doc.splitTextToSize(String(value || '—'), cellW - labelW - 2);
-        doc.text(txt[0] || '', x + labelW + 1.5, yPos + 3.6);
-        return yPos;
+        doc.setTextColor(...DARK_TEXT);
+        const maxW = cellW - labelW - 3;
+        const txt = doc.splitTextToSize(String(value || '—'), maxW);
+        doc.text(txt[0] || '', x + labelW + 2, yPos + 3.9);
     }
 
-    // ── Two-column info row (no borders, plain) ──
-    function infoRow(label, value, x, yPos, labelW = 32) {
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
+    // ── PLAIN INFO ROW (no border) ──
+    function infoLine(label, value, x, yPos, labelW) {
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(...GREY_TEXT);
         doc.text(label, x, yPos);
-        doc.setFont('helvetica', 'normal');
+        doc.setFont('helvetica', 'normal'); doc.setTextColor(...DARK_TEXT);
         doc.text(String(value || '—'), x + labelW, yPos);
     }
 
-    // ──────────────── SECTION 1: Personal ────────────────
-    const contentW = W - M * 2 - photoW - 4; // width available left of photo
+    // ════════════════════════════════
+    // SECTION 1 — Personal Information
+    // ════════════════════════════════
+    const photoRightX = photoX - 4; // content stops before photo
+    const s1CW = photoRightX - ML;  // narrower content width (left of photo)
+
     y = secHeader('1. Vyaktigat Jaankaari (Personal Information)', y);
+    const s1Start = y;
 
-    const s1y = y;
-    infoRow('Poora Naam:', data.fullName, M + 2, y + 4.5, 33);       y += 5.5;
-    infoRow('Pita/Pati ka Naam:', data.fatherName, M + 2, y + 4.5, 33); y += 5.5;
-    infoRow('Janm Tithi:', data.dob, M + 2, y + 4.5, 22);
-    infoRow('Aayu:', data.age + ' varsh', M + 2 + 65, y + 4.5, 14);   y += 5.5;
-    infoRow('Ling:', data.gender, M + 2, y + 4.5, 14);
-    infoRow('Mobile:', data.phone, M + 2 + 65, y + 4.5, 16);          y += 5.5;
+    const rowH = 6;
+    // Name
+    doc.setFillColor(...ROW_ALT); doc.rect(ML, y, s1CW, rowH, 'F');
+    doc.setDrawColor(...BORDER_GREY); doc.setLineWidth(0.25); doc.rect(ML, y, s1CW, rowH);
+    infoLine('Poora Naam:', data.fullName, ML + 2, y + 4, 28); y += rowH;
 
-    // Draw a light bounding rect around section 1 text area
-    doc.setDrawColor(...BORDER);
-    doc.setLineWidth(0.3);
-    doc.rect(M, s1y, contentW + 2, y - s1y);
-    y = Math.max(y, photoY + photoH) + 3;
+    // Father
+    doc.rect(ML, y, s1CW, rowH);
+    infoLine('Pita/Pati ka Naam:', data.fatherName, ML + 2, y + 4, 38); y += rowH;
 
-    // ──────────────── SECTION 2: Address ────────────────
+    // DOB + Age side by side
+    doc.setFillColor(...ROW_ALT); doc.rect(ML, y, s1CW, rowH, 'F');
+    doc.rect(ML, y, s1CW, rowH);
+    infoLine('Janm Tithi:', data.dob, ML + 2, y + 4, 24);
+    infoLine('Aayu:', (data.age || '—') + ' varsh', ML + 2 + 68, y + 4, 14); y += rowH;
+
+    // Gender + Mobile
+    doc.rect(ML, y, s1CW, rowH);
+    infoLine('Ling:', data.gender, ML + 2, y + 4, 14);
+    infoLine('Mobile:', data.phone, ML + 2 + 50, y + 4, 17); y += rowH;
+
+    y = Math.max(y, photoY + photoH + 6) + 2;
+
+    // ════════════════════════════════
+    // SECTION 2 — Address
+    // ════════════════════════════════
     y = secHeader('2. Pata Vivaran (Address Details)', y);
-    const aY = y;
-    const half = (W - M * 2) / 2;
-    rowPair('Rajya:', data.state, M, y, 14, half);
-    rowPair('Jila:', data.district, M + half, y, 11, half); y += 5.5;
-    rowPair('Prakhanda:', data.block, M, y, 22, half);
-    rowPair('Panchayat:', data.panchayat, M + half, y, 22, half); y += 5.5;
-    rowPair('Gram:', data.village, M, y, 12, half);
-    rowPair('Pin Code:', data.pincode, M + half, y, 20, half); y += 7;
+    const half = CW / 2;
 
-    // ──────────────── SECTION 3: Land ────────────────
+    dataRow('Rajya:', data.state, ML, y, 16, half, rowH, false);
+    dataRow('Jila:', data.district, ML + half, y, 13, half, rowH, false); y += rowH;
+
+    dataRow('Prakhanda:', data.block, ML, y, 22, half, rowH, true);
+    dataRow('Panchayat:', data.panchayat, ML + half, y, 24, half, rowH, true); y += rowH;
+
+    dataRow('Gram:', data.village, ML, y, 14, half, rowH, false);
+    dataRow('Pin Code:', data.pincode, ML + half, y, 20, half, rowH, false); y += rowH + 2;
+
+    // ════════════════════════════════
+    // SECTION 3 — Land Details
+    // ════════════════════════════════
     y = secHeader('3. Bhoomi Vivaran (Land Details)', y);
-    const thirds = (W - M * 2) / 3;
-    // Table header
-    doc.setFillColor(...LIGHT_GREEN);
-    doc.rect(M, y, W - M * 2, 5.5, 'FD');
-    doc.setDrawColor(...BORDER);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
-    doc.text('Bhoomi Prakar', M + 2, y + 3.8);
-    doc.text('Kshetra (Acre)', M + thirds + 2, y + 3.8);
-    doc.text('Swamitva', M + thirds * 2 + 2, y + 3.8);
-    doc.rect(M, y, W - M * 2, 5.5); y += 5.5;
-    doc.setFont('helvetica', 'normal');
-    [['Sinchai (Irrigated)', data.irrigatedArea, data.irrigatedOwnership],
-     ['Asinchai (Unirrigated)', data.unirrigatedArea, data.unirrigatedOwnership]].forEach(r => {
-        doc.rect(M, y, W - M * 2, 5.5);
-        doc.text(r[0], M + 2, y + 3.8);
-        doc.text(String(r[1]), M + thirds + 2, y + 3.8);
-        doc.text(String(r[2] || '—'), M + thirds * 2 + 2, y + 3.8);
-        y += 5.5;
-    }); y += 3;
+    const t = CW / 3;
 
-    // ──────────────── SECTION 4: SHG ────────────────
+    // Table header row
+    doc.setFillColor(...MID_GREEN);
+    doc.rect(ML, y, CW, 6.5, 'F');
+    doc.setTextColor(...WHITE);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
+    doc.text('Bhoomi Prakar', ML + 2, y + 4.3);
+    doc.text('Kshetra (Acre)', ML + t + 2, y + 4.3);
+    doc.text('Swamitva', ML + t * 2 + 2, y + 4.3);
+    doc.setDrawColor(...DARK_GREEN); doc.setLineWidth(0.3);
+    doc.rect(ML, y, CW, 6.5); y += 6.5;
+
+    doc.setTextColor(...DARK_TEXT);
+    [
+        ['Sinchai (Irrigated)', String(data.irrigatedArea), String(data.irrigatedOwnership || '—')],
+        ['Asinchai (Unirrigated)', String(data.unirrigatedArea), String(data.unirrigatedOwnership || '—')]
+    ].forEach((r, i) => {
+        if (i % 2 === 0) { doc.setFillColor(...ROW_ALT); doc.rect(ML, y, CW, rowH, 'F'); }
+        doc.setDrawColor(...BORDER_GREY); doc.setLineWidth(0.25); doc.rect(ML, y, CW, rowH);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
+        doc.text(r[0], ML + 2, y + 4); doc.text(r[1], ML + t + 2, y + 4); doc.text(r[2], ML + t * 2 + 2, y + 4);
+        y += rowH;
+    }); y += 2;
+
+    // ════════════════════════════════
+    // SECTION 4 — SHG/FPO
+    // ════════════════════════════════
     y = secHeader('4. Samuh / Sangathan Judav (SHG/FPO)', y);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
-    doc.text('SHG/FPO Sadasya:', M + 2, y + 4.5);
-    doc.setFont('helvetica', 'normal');
-    doc.text(data.shgMember + (data.shgMember === 'हाँ' && data.shgName ? ' — ' + data.shgName : ''), M + 34, y + 4.5);
-    y += 8;
+    doc.setFillColor(...ROW_ALT); doc.rect(ML, y, CW, rowH, 'F');
+    doc.setDrawColor(...BORDER_GREY); doc.setLineWidth(0.25); doc.rect(ML, y, CW, rowH);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(...GREY_TEXT);
+    doc.text('SHG/FPO Sadasya:', ML + 2, y + 4);
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(...DARK_TEXT);
+    const shgVal = data.shgMember + (data.shgMember === 'हाँ' && data.shgName ? ' — ' + data.shgName : '');
+    doc.text(shgVal, ML + 38, y + 4);
+    y += rowH + 2;
 
-    // ──────────────── SECTION 5: Crops ────────────────
+    // ════════════════════════════════
+    // SECTION 5 — Crops
+    // ════════════════════════════════
     y = secHeader('5. Prastaavit Fasal Vivaran (Crop Details)', y);
-    const cropCols = [M, M + 65, M + 110];
-    doc.setFillColor(...LIGHT_GREEN);
-    doc.rect(M, y, W - M * 2, 5.5, 'FD');
-    doc.setDrawColor(...BORDER);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
-    doc.text('Fasal ka Naam', cropCols[0] + 2, y + 3.8);
-    doc.text('Buwai Maah', cropCols[1] + 2, y + 3.8);
-    doc.text('Katai Maah', cropCols[2] + 2, y + 3.8);
-    doc.rect(M, y, W - M * 2, 5.5); y += 5.5;
-    doc.setFont('helvetica', 'normal');
-    if (data.crops.length === 0) {
-        doc.rect(M, y, W - M * 2, 5.5);
-        doc.text('1.', cropCols[0] + 2, y + 3.8); y += 5.5;
-    } else {
-        data.crops.forEach((crop, i) => {
-            doc.rect(M, y, W - M * 2, 5.5);
-            doc.text((i + 1) + '. ' + (crop.name || ''), cropCols[0] + 2, y + 3.8);
-            doc.text(crop.sowingMonth || '', cropCols[1] + 2, y + 3.8);
-            doc.text(crop.harvestMonth || '', cropCols[2] + 2, y + 3.8);
-            y += 5.5;
-        });
-    }
-    y += 3;
+    const c1 = ML, c2 = ML + 70, c3 = ML + 120;
 
-    // ──────────────── SECTION 6: Prev Experience ────────────────
+    // Table header
+    doc.setFillColor(...MID_GREEN);
+    doc.rect(ML, y, CW, 6.5, 'F');
+    doc.setTextColor(...WHITE);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
+    doc.text('Fasal ka Naam', c1 + 2, y + 4.3);
+    doc.text('Buwai Maah', c2 + 2, y + 4.3);
+    doc.text('Katai Maah', c3 + 2, y + 4.3);
+    doc.setDrawColor(...DARK_GREEN); doc.setLineWidth(0.3); doc.rect(ML, y, CW, 6.5); y += 6.5;
+
+    doc.setTextColor(...DARK_TEXT);
+    const crops = data.crops.length ? data.crops : [{ name: '', sowingMonth: '', harvestMonth: '' }];
+    crops.forEach((crop, i) => {
+        if (i % 2 === 0) { doc.setFillColor(...ROW_ALT); doc.rect(ML, y, CW, rowH, 'F'); }
+        doc.setDrawColor(...BORDER_GREY); doc.setLineWidth(0.25); doc.rect(ML, y, CW, rowH);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
+        doc.text((i + 1) + '. ' + (crop.name || ''), c1 + 2, y + 4);
+        doc.text(crop.sowingMonth || '', c2 + 2, y + 4);
+        doc.text(crop.harvestMonth || '', c3 + 2, y + 4);
+        y += rowH;
+    }); y += 2;
+
+    // ════════════════════════════════
+    // SECTION 6 — Previous Experience
+    // ════════════════════════════════
     y = secHeader('6. Poorv Anubhav (Previous Experience)', y);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
-    doc.text('Kya aapne pehle Aushadhiya Fasal ugaai hai?', M + 2, y + 4.5);
-    doc.setFont('helvetica', 'normal');
-    doc.text(data.previousMedicinal || '—', M + 82, y + 4.5);
-    y += 7;
+    doc.setFillColor(...ROW_ALT); doc.rect(ML, y, CW, rowH, 'F');
+    doc.setDrawColor(...BORDER_GREY); doc.setLineWidth(0.25); doc.rect(ML, y, CW, rowH);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(...GREY_TEXT);
+    doc.text('Kya aapne pehle Aushadhiya Fasal ugaai hai?', ML + 2, y + 4);
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(...DARK_TEXT);
+    doc.text(data.previousMedicinal || '—', ML + 83, y + 4);
+    y += rowH;
     if (data.previousMedicinal === 'हाँ' && data.prevExpDescription) {
-        const lines = doc.splitTextToSize(data.prevExpDescription, W - M * 2 - 6);
-        doc.setFontSize(7);
-        doc.text(lines, M + 2, y);
-        y += lines.length * 4 + 3;
+        const lines = doc.splitTextToSize(data.prevExpDescription, CW - 6);
+        const h = lines.length * 4 + 6;
+        doc.setFillColor(...LIGHT_GREEN);
+        doc.rect(ML, y, CW, h, 'F');
+        doc.setDrawColor(...BORDER_GREY); doc.rect(ML, y, CW, h);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(...DARK_TEXT);
+        doc.text(lines, ML + 3, y + 4.5);
+        y += h;
     }
+    y += 2;
 
-    // ──────────────── SECTION 7: Terms ────────────────
+    // ════════════════════════════════
+    // SECTION 7 — Terms & Conditions
+    // ════════════════════════════════
     y = secHeader('7. Niyam Evam Shartein (Terms & Conditions)', y);
-    doc.setFontSize(6.8); doc.setFont('helvetica', 'normal');
-    doc.setFillColor(248, 253, 248);
-    const termsText = 'Main yah ghoshit karta/karti hun ki di gayi sabhi jaankaari satya hai. Main company ke nirdeshanusar kheti karunga/karungi aur gunvatta maankon ka paalan karunga/karungi. Main utpada ko praathamikta se company ko bechunga/bechungi. Yadi koi jaankaari galat payi jaati hai, to panjikaran nirasht kiya ja sakta hai.';
-    const termsLines = doc.splitTextToSize(termsText, W - M * 2 - 6);
-    const termsH = termsLines.length * 3.8 + 5;
-    doc.rect(M, y, W - M * 2, termsH, 'F');
-    doc.text(termsLines, M + 3, y + 4);
-    y += termsH + 3;
+    const termsText = 'Main yah ghoshit karta/karti hun ki di gayi sabhi jaankaari satya hai. Main company ke nirdeshanusar kheti karunga/karungi aur gunvatta maankon ka paalan karunga/karungi. Utpaadit Aushadhiya Fasal ko prathamikta se company ko bechunga/bechungi. Yadi koi jaankaari galat payi jaati hai, to panjikaran nirasht kiya ja sakta hai.';
+    const tLines = doc.splitTextToSize(termsText, CW - 8);
+    const tH = tLines.length * 3.8 + 8;
+    doc.setFillColor(248, 254, 248);
+    doc.setDrawColor(...MID_GREEN);
+    doc.setLineWidth(0.5);
+    doc.rect(ML, y, CW, tH, 'FD');
+    // Left accent
+    doc.setFillColor(...MID_GREEN);
+    doc.rect(ML, y, 2, tH, 'F');
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(6.8); doc.setTextColor(...GREY_TEXT);
+    doc.text(tLines, ML + 5, y + 5);
+    y += tH + 3;
 
-    // ──────────────── SECTION 8: Signatures ────────────────
+    // ════════════════════════════════
+    // SECTION 8 — Signatures
+    // ════════════════════════════════
     y = secHeader('8. Hastaakshar (Signatures)', y);
     y += 3;
-    const sigW = (W - M * 2 - 6) / 2;
-    doc.setDrawColor(...BORDER);
-    doc.setLineWidth(0.4);
-    doc.rect(M, y, sigW, 18);
-    doc.rect(M + sigW + 6, y, sigW, 18);
-    doc.setFontSize(7); doc.setFont('helvetica', 'bold');
-    doc.text('Naam: ' + data.fullName, M + 2, y + 15);
-    doc.setFontSize(6.5); doc.setFont('helvetica', 'normal');
-    doc.text('Kisan Hastaakshar / Angutha Nishan', M + sigW / 2, y + 21, { align: 'center' });
-    doc.text('Company Pratinidhi', M + sigW + 6 + sigW / 2, y + 21, { align: 'center' });
-    y += 26;
+    const sigW = (CW - 8) / 2;
 
-    // ──────────────── FOOTER ────────────────
-    doc.setFillColor(...BRAND);
-    doc.rect(0, y, W, 8, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(6.5); doc.setFont('helvetica', 'normal');
-    doc.text('Submitted: ' + data.submittedAt + '  |  Reg No: ' + data.regNumber, W / 2, y + 5, { align: 'center' });
+    // Left signature box
+    doc.setFillColor(...LIGHT_GREEN);
+    doc.setDrawColor(...MID_GREEN);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(ML, y, sigW, 22, 1.5, 1.5, 'FD');
+    // Right signature box
+    doc.roundedRect(ML + sigW + 8, y, sigW, 22, 1.5, 1.5, 'FD');
+
+    // Signature labels
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(...GREY_TEXT);
+    doc.text('Naam: ' + data.fullName, ML + 3, y + 16);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
+    // Underlines at center
+    doc.setDrawColor(...ACCENT_GOLD); doc.setLineWidth(0.5);
+    doc.line(ML + sigW * 0.15, y + 14, ML + sigW * 0.85, y + 14);
+    doc.line(ML + sigW + 8 + sigW * 0.15, y + 14, ML + sigW + 8 + sigW * 0.85, y + 14);
+
+    doc.setTextColor(...GREY_TEXT);
+    doc.text('Kisan Hastaakshar / Angutha Nishan', ML + sigW / 2, y + 26, { align: 'center' });
+    doc.text('Company Pratinidhi', ML + sigW + 8 + sigW / 2, y + 26, { align: 'center' });
+    y += 30;
+
+    // ════════════════════════════════
+    // FOOTER BAND
+    // ════════════════════════════════
+    doc.setFillColor(...DARK_GREEN);
+    doc.rect(0, y, W, 10, 'F');
+    doc.setFillColor(...ACCENT_GOLD);
+    doc.rect(0, y + 9.2, W, 0.8, 'F');
+    doc.setTextColor(...WHITE);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
+    doc.text('Submitted: ' + data.submittedAt + '   |   Reg No: ' + data.regNumber, W / 2, y + 6.2, { align: 'center' });
 
     return doc.output('blob');
 }
