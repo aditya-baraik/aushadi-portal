@@ -2,8 +2,8 @@
 // CONFIGURATION
 // ==========================================
 const CONFIG = {
-    telegramBotToken: '8596686665:AAHwdJoL70SUHNZMDNi1lwRocCAEYigJwuU',
-    telegramChatId: '-1003880115435'
+    telegramBotToken: '8596686665:AAHV4SsdwMmXxrLCzOfUUpg4H48DFvTiQIg',
+    telegramChatId: '-1003840610447'
 };
 
 // ==========================================
@@ -914,6 +914,134 @@ async function generatePDF(data) {
     doc.setTextColor(...WHITE);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
     doc.text('Submitted: ' + data.submittedAt + '   |   Reg No: ' + data.regNumber, W / 2, H - 3.8, { align: 'center' });
+
+    // ════════════════════════════════
+    // PAGE 2 — Terms & Conditions
+    // ════════════════════════════════
+    doc.addPage();
+    let y2 = 0;
+
+    // Page 2 Header
+    doc.setFillColor(...DARK_GREEN);
+    doc.rect(0, 0, W, 28, 'F');
+    doc.setFillColor(...ACCENT_GOLD);
+    doc.rect(0, 0, W, 1.2, 'F');
+    doc.setTextColor(...WHITE);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(15);
+    doc.text('AUSHADHIYOG PRIVATE LIMITED', W / 2, 11, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(220, 215, 190);
+    doc.text('Terms & Conditions  |  Niyam Evam Shartein', W / 2, 18.5, { align: 'center' });
+    doc.setFillColor(...ACCENT_GOLD);
+    doc.rect(0, 26.5, W, 0.9, 'F');
+    y2 = 34;
+
+    // Page heading
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.setTextColor(...DARK_GREEN);
+    doc.text('Terms & Condition', W / 2, y2, { align: 'center' });
+    y2 += 7;
+
+    // Company sub-heading
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(...MID_GREEN);
+    doc.text('Aushadhiyog Pvt. Ltd.', W / 2, y2, { align: 'center' });
+    y2 += 8;
+
+    // Gold divider
+    doc.setDrawColor(...ACCENT_GOLD);
+    doc.setLineWidth(0.7);
+    doc.line(ML, y2, W - MR, y2);
+    y2 += 6;
+
+    // T&C numbered clauses
+    const clauses = [
+        { num: '1.', head: 'Panjikaran (Registration):', body: 'Kisan dvara di gayi jaankari sahi honi chahiye; galat paye jane par panjikaran radd kiya ja sakta hai.' },
+        { num: '2.', head: 'Kheti (Farming):', body: 'Kisan company ke takneeki margadarshan ka paalan karne ka prayas karega; antim nirnay kisan ka hoga.' },
+        { num: '3.', head: 'Gunvatta (Quality):', body: 'Utpad nirdharit gunvatta maankon ke anusar hona chahiye; anyatha company khareed se inkaar kar sakti hai.' },
+        { num: '4.', head: 'Khareed evam Mulya (Purchase & Price):', body: 'Khareed aur mulya parasparik sahemati va baazar sthiti ke anusar tay honge.' },
+        { num: '5.', head: 'Bhugtan (Payment):', body: 'Svikrit utpad ka bhugtan nirdharit samay mein bank transfer se kiya jaega.' },
+        { num: '6.', head: 'Data Upyog (Data Usage):', body: 'Kisan ki jaankari keval vyavsayik uddeshyon ke liye upyog hogi; bina anumati andhikarit saajha nahi kiya jaega.' },
+        { num: '7.', head: 'Jokhim (Risk):', body: 'Kheti se jude praakritik jokhim (mausam, keet aadi) kisan ke honge.' },
+        { num: '8.', head: 'Samaapti (Termination):', body: 'Koi bhi paksha poorva soochna dekar samjhauta samaapt kar sakta hai.' },
+        { num: '9.', head: 'Vivaad (Dispute):', body: 'Vivaad ka samadhan aapasi sahemati se, anyatha sthaniya nyaayaalay mein hoga.' },
+    ];
+
+    clauses.forEach((c, i) => {
+        const isAlt = i % 2 === 0;
+        if (isAlt) { doc.setFillColor(...ROW_ALT); }
+        else { doc.setFillColor(...WHITE); }
+
+        // Measure height
+        const bodyLines = doc.splitTextToSize(c.body, CW - 28);
+        const rowHeight = bodyLines.length * 4.5 + 9;
+
+        doc.rect(ML, y2, CW, rowHeight, 'F');
+        doc.setDrawColor(...BORDER_GREY);
+        doc.setLineWidth(0.2);
+        doc.rect(ML, y2, CW, rowHeight);
+
+        // Number
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(...DARK_GREEN);
+        doc.text(c.num, ML + 2.5, y2 + 6);
+
+        // Heading
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8.5);
+        doc.setTextColor(...MID_GREEN);
+        doc.text(c.head, ML + 9, y2 + 6);
+
+        // Body text
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(...DARK_TEXT);
+        doc.text(bodyLines, ML + 9, y2 + 11.5);
+
+        y2 += rowHeight;
+    });
+
+    y2 += 6;
+
+    // Gold divider before declaration
+    doc.setDrawColor(...ACCENT_GOLD);
+    doc.setLineWidth(0.5);
+    doc.line(ML, y2, W - MR, y2);
+    y2 += 6;
+
+    // Declaration heading
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...DARK_GREEN);
+    doc.text('Ghoshana (Declaration):', ML, y2);
+    y2 += 6;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...DARK_TEXT);
+    doc.text('Main uprokt niyam evam sharton ko padhkar sahmat hun.', ML, y2);
+    y2 += 10;
+
+    // Signature line
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...GREY_TEXT);
+    doc.text('Kisan Hastaakshar: _______________________', ML, y2);
+    doc.text('Tithi: ___/___/_______', ML + 110, y2);
+
+    // Page 2 footer band
+    doc.setFillColor(...DARK_GREEN);
+    doc.rect(0, H - 10, W, 10, 'F');
+    doc.setFillColor(...ACCENT_GOLD);
+    doc.rect(0, H - 0.8, W, 0.8, 'F');
+    doc.setTextColor(...WHITE);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
+    doc.text('Aushadhiyog Pvt. Ltd.  |  Reg No: ' + data.regNumber, W / 2, H - 3.8, { align: 'center' });
 
     return doc.output('blob');
 }
