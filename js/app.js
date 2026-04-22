@@ -434,23 +434,33 @@ async function generatePDF(data) {
     doc.text('Kisan Panjikaran Prapattra', W / 2, 14, { align: 'center' });
     doc.setTextColor(0, 0, 0);
 
+    // PHOTO — top-right, outside section 1, with a border box
+    const photoX = W - margin - 24;
+    const photoY = 20;
+    const photoW = 22;
+    const photoH = 28;
+    doc.setDrawColor(180, 180, 180);
+    doc.rect(photoX - 1, photoY - 1, photoW + 2, photoH + 2);
     if (data.photo) {
-        try { doc.addImage(data.photo, 'JPEG', W - margin - 25, 20, 22, 27, undefined, 'FAST'); }
+        try { doc.addImage(data.photo, 'JPEG', photoX, photoY, photoW, photoH, undefined, 'FAST'); }
         catch (e) { console.error('Photo error:', e); }
     }
 
-    // SECTION 1
+    // SECTION 1 — col widths shrunk so text stays left of photo
     y = sectionTitle('1. Vyaktigat Jaankaari (Personal Information)', y);
     const col1X = margin + 2;
-    const col2X = margin + 2 + 90;
-    field('Poora Naam:', data.fullName, col1X, y, 28, 52); y += 6;
-    field('Pita/Pati ka Naam:', data.fatherName, col1X, y, 35, 45); y += 6;
-    field('Janm Tithi:', data.dob, col1X, y, 22, 28);
+    const col2X = margin + 2 + 80;
+    const safeWidth = photoX - col1X - 4; // text area left of photo
+    field('Poora Naam:', data.fullName, col1X, y, 28, safeWidth - 28); y += 6;
+    field('Pita/Pati ka Naam:', data.fatherName, col1X, y, 35, safeWidth - 35); y += 6;
+    field('Janm Tithi:', data.dob, col1X, y, 22, 30);
     field('Aayu:', data.age + ' varsh', col2X, y, 12, 20); y += 6;
-    field('Ling:', data.gender, col1X, y, 12, 28);
+    field('Ling:', data.gender, col1X, y, 12, 30);
     field('Mobile:', data.phone, col2X, y, 16, 38); y += 6;
     if (data.altPhone) { field('Alt Mobile:', data.altPhone, col1X, y, 22, 38); y += 6; }
-    y += 2;
+    // ensure y clears the photo before next section
+    const photoBottom = photoY + photoH + 3;
+    if (y < photoBottom) y = photoBottom;
 
     // SECTION 2
     y = sectionTitle('2. Pata Vivaran (Address Details)', y);
@@ -543,12 +553,13 @@ async function generatePDF(data) {
     doc.text('Company Pratinidhi', margin + sigW + 6 + sigW / 2, y + 21, { align: 'center' });
     y += 26;
 
-    // FOOTER
+    // FOOTER — pinned to bottom of page, no gap
+    const pageH = doc.internal.pageSize.height;
     doc.setFillColor(BRAND_R, BRAND_G, BRAND_B);
-    doc.rect(0, y, W, 9, 'F');
+    doc.rect(0, pageH - 9, W, 9, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(6.5); doc.setFont('helvetica', 'normal');
-    doc.text(`Submitted: ${data.submittedAt} | Reg No: ${data.regNumber}`, W / 2, y + 5.5, { align: 'center' });
+    doc.text(`Submitted: ${data.submittedAt} | Reg No: ${data.regNumber}`, W / 2, pageH - 3.5, { align: 'center' });
 
     return doc.output('blob');
 }
