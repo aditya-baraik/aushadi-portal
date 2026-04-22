@@ -1315,5 +1315,18 @@ function checkAllStepsDots() {
 
 // Next/Prev button logic is handled by app.js — no duplicate listener needed here.
 </script>
+    <script>
+// Policy/Terms se wapas aane par Step 4 pe redirect
+if (window.location.hash === '#step4') {
+    document.addEventListener('DOMContentLoaded', function() {
+        // Draft restore hone ka wait karo, phir step 4 pe jump karo
+        setTimeout(function() {
+            jumpToStep(4);
+            // URL se hash hata do (clean URL)
+            history.replaceState(null, '', window.location.pathname);
+        }, 100);
+    });
+}
+</script>
 </body>
 </html>
