@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="hi" id="htmlRoot">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>नियम एवं शर्तें | Terms & Conditions — Aushadhiyog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand:       #1B3A1A;
+            --brand-light: #2B5429;
+            --brand-mid:   #3D7A3A;
+            --brand-vivid: #4C9948;
+            --cream:       #F5F0E8;
+            --cream2:      #EDE5D2;
+            --cream-light: #FAF7F2;
+            --terra:       #B75C2A;
+            --gold:        #C8A84B;
+            --gold-light:  #E8D08A;
+            --ink:         #181511;
+            --ink2:        #3A342C;
+            --muted:       #7A6E62;
+            --border:      #DDD3C0;
+            --shadow-card: 0 2px 20px rgba(27,58,26,.07), 0 1px 4px rgba(27,58,26,.04);
+            --ff: 'Cormorant Garamond', Georgia, serif;
+            --fb: 'DM Sans', system-ui, sans-serif;
+            --fh: 'Noto Sans Devanagari', sans-serif;
+        }
+
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; }
+
+        body {
+            font-family: var(--fb);
+            background: var(--cream-light);
+            color: var(--ink);
+            min-height: 100vh;
+            line-height: 1.7;
+        }
+
+        /* Subtle background texture */
+        body::before {
+            content:'';
+            position:fixed; inset:0; pointer-events:none; z-index:0;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231B3A1A' fill-opacity='0.022'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity:.6;
+        }
+
+        header, main, footer { position:relative; z-index:1; }
+
+        /* ── HEADER ── */
+        header {
+            background: linear-gradient(135deg, var(--brand) 0%, #0f2310 100%);
+            box-shadow: 0 2px 16px rgba(0,0,0,.18);
+            position: sticky; top:0; z-index:50;
+        }
+        .header-gold-line {
+            height:1.5px;
+            background: linear-gradient(90deg, transparent, rgba(200,168,75,.5), transparent);
+        }
+        .header-inner {
+            max-width: 860px; margin: 0 auto;
+            padding: 0 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            height: 72px;
+        }
+        .logo-area { display:flex; align-items:center; gap:10px; }
+        .logo-mark {
+            width:52px; height:52px; border-radius:50%;
+            background:rgba(255,255,255,.14);
+            display:flex; align-items:center; justify-content:center;
+            flex-shrink:0; overflow:hidden;
+            border:2px solid rgba(255,255,255,.4);
+            box-shadow: 0 3px 14px rgba(0,0,0,.28);
+        }
+        .logo-mark img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+        .logo-text h1 {
+            font-family: var(--ff);
+            font-size:1.45rem; font-weight:700; font-style:italic;
+            color:#fff; line-height:1.1; letter-spacing:-.01em;
+        }
+        .logo-text p {
+            font-size:.68rem; color:var(--gold);
+            font-weight:600; letter-spacing:.1em; text-transform:uppercase;
+        }
+
+        /* Language toggle */
+        .lang-toggle {
+            display:flex; background:rgba(255,255,255,.1);
+            border-radius:2rem; padding:3px; gap:2px;
+            border:1px solid rgba(255,255,255,.18);
+        }
+        .lang-btn {
+            border:none; background:transparent;
+            padding:.32rem .85rem; border-radius:1.5rem;
+            font-weight:600; font-size:.76rem; cursor:pointer;
+            transition:all .22s; color:rgba(255,255,255,.6);
+            font-family:var(--fb); letter-spacing:.03em;
+        }
+        .lang-btn.active {
+            background:rgba(255,255,255,.18); color:#fff;
+            box-shadow:0 1px 4px rgba(0,0,0,.15);
+        }
+
+        /* ── HERO BAND ── */
+        .hero-band {
+            background: linear-gradient(135deg, #1B3A1A 0%, #2B5429 60%, #1B3A1A 100%);
+            padding: 48px 20px 40px;
+            text-align: center;
+            position:relative; overflow:hidden;
+        }
+        .hero-band::before {
+            content:'';
+            position:absolute; inset:0; pointer-events:none;
+            background: radial-gradient(ellipse at center, rgba(200,168,75,.08) 0%, transparent 70%);
+        }
+        .hero-band-inner { position:relative; z-index:1; max-width:660px; margin:0 auto; }
+        .hero-badge {
+            display:inline-flex; align-items:center; gap:7px;
+            background:rgba(200,168,75,.12);
+            border:1px solid rgba(200,168,75,.3);
+            border-radius:2rem; padding:.38rem 1.1rem;
+            font-size:.7rem; font-weight:700;
+            color:var(--gold-light); letter-spacing:.1em;
+            text-transform:uppercase; margin-bottom:18px;
+        }
+        .hero-title {
+            font-family: var(--ff);
+            font-size: clamp(1.9rem, 5vw, 2.8rem);
+            font-weight:700; color:#fff;
+            line-height:1.15; letter-spacing:-.01em;
+            text-shadow: 0 2px 20px rgba(0,0,0,.35);
+            margin-bottom:10px;
+        }
+        .hero-subtitle {
+            font-size:.88rem; color:rgba(255,255,255,.58);
+            font-weight:500; letter-spacing:.04em; text-transform:uppercase;
+        }
+        .hero-divider {
+            width:80px; height:2px;
+            background:linear-gradient(90deg, transparent, var(--gold), transparent);
+            margin: 18px auto 0;
+        }
+
+        /* ── MAIN CONTENT ── */
+        main { max-width: 860px; margin:0 auto; padding:40px 20px 60px; }
+
+        .company-tag {
+            display:inline-flex; align-items:center; gap:8px;
+            background:#fff;
+            border:1.5px solid var(--border);
+            border-radius:.6rem; padding:.55rem 1.1rem;
+            font-size:.78rem; font-weight:700;
+            color:var(--brand); letter-spacing:.04em;
+            box-shadow: 0 2px 8px rgba(27,58,26,.07);
+            margin-bottom:32px;
+        }
+        .company-tag svg { flex-shrink:0; }
+
+        /* Intro card */
+        .intro-card {
+            background: linear-gradient(135deg, #F0FDF4, #ECFDF5);
+            border:1.5px solid #86EFAC; border-radius:1rem;
+            padding:1.4rem 1.6rem; margin-bottom:36px;
+            box-shadow: 0 2px 12px rgba(27,58,26,.06);
+        }
+        .intro-card p {
+            font-size:.875rem; color:#166534;
+            font-family:var(--fh); line-height:1.75;
+            font-weight:500;
+        }
+
+        /* Clause cards */
+        .clauses-wrapper { display:flex; flex-direction:column; gap:14px; margin-bottom:40px; }
+
+        .clause-card {
+            background:#fff;
+            border:1.5px solid var(--border);
+            border-radius:.85rem;
+            padding:1.25rem 1.4rem 1.25rem 1.2rem;
+            display:flex; gap:1rem; align-items:flex-start;
+            box-shadow: var(--shadow-card);
+            transition: box-shadow .22s, border-color .22s, transform .18s;
+            position:relative; overflow:hidden;
+        }
+        .clause-card::before {
+            content:'';
+            position:absolute; left:0; top:0; bottom:0; width:3px;
+            background:linear-gradient(180deg, var(--brand-mid), var(--brand-vivid));
+            border-radius:3px 0 0 3px;
+        }
+        .clause-card:hover {
+            box-shadow: 0 6px 28px rgba(27,58,26,.13);
+            border-color: #A7F3D0;
+            transform: translateY(-1px);
+        }
+        .clause-num {
+            min-width: 36px; height:36px;
+            background:linear-gradient(145deg, var(--brand-mid), var(--brand));
+            color:#fff; border-radius:.55rem;
+            display:flex; align-items:center; justify-content:center;
+            font-weight:800; font-size:.85rem;
+            font-family:var(--fb); flex-shrink:0;
+            box-shadow: 0 3px 10px rgba(27,58,26,.25);
+        }
+        .clause-body { flex:1; }
+        .clause-title {
+            font-size:.78rem; font-weight:800;
+            color:var(--brand); text-transform:uppercase;
+            letter-spacing:.06em; margin-bottom:.35rem;
+            display:flex; align-items:center; gap:.4rem;
+        }
+        .clause-title-en { color:var(--brand-mid); }
+        .clause-text {
+            font-size:.895rem; color:var(--ink2);
+            line-height:1.75; font-family:var(--fh);
+        }
+        .clause-text-en {
+            font-size:.875rem; color:var(--muted);
+            line-height:1.65; margin-top:.3rem;
+            font-style:italic;
+        }
+
+        /* Section shown/hidden based on language */
+        .lang-hi, .lang-en { transition:opacity .2s; }
+
+        /* Declaration box */
+        .declaration-box {
+            background: linear-gradient(135deg, #FFFBEB, #FEF3C7);
+            border:1.5px solid #FCD34D; border-radius:1rem;
+            padding:1.4rem 1.6rem; margin-bottom:36px;
+            box-shadow: 0 2px 12px rgba(245,158,11,.08);
+        }
+        .declaration-box h4 {
+            font-size:.78rem; font-weight:800; color:#92400E;
+            text-transform:uppercase; letter-spacing:.07em;
+            margin-bottom:.7rem; display:flex; align-items:center; gap:.4rem;
+        }
+        .declaration-box p {
+            font-size:.875rem; color:#78350F;
+            font-family:var(--fh); line-height:1.75;
+        }
+
+        /* Back button */
+        .back-btn {
+            display:inline-flex; align-items:center; gap:.55rem;
+            background:linear-gradient(145deg, var(--brand-mid), var(--brand));
+            color:#fff; padding:.72rem 1.6rem;
+            border:none; border-radius:.6rem;
+            font-weight:700; cursor:pointer; font-size:.875rem;
+            font-family:var(--fb); letter-spacing:.04em;
+            text-transform:uppercase;
+            box-shadow: 0 3px 12px rgba(27,58,26,.3), inset 0 1px 0 rgba(255,255,255,.12);
+            text-decoration:none; transition:all .25s;
+        }
+        .back-btn:hover {
+            transform:translateY(-2px);
+            box-shadow: 0 7px 22px rgba(27,58,26,.4);
+        }
+        .back-btn:active { transform:translateY(0); }
+
+        /* ── FOOTER ── */
+        footer {
+            background:linear-gradient(160deg, #0f2310 0%, var(--brand) 60%, #142814 100%);
+            padding:24px 20px;
+            text-align:center; position:relative;
+        }
+        .footer-gold { height:1px; background:linear-gradient(90deg,transparent,rgba(200,168,75,.4),transparent); margin-bottom:18px; }
+        footer p { font-size:.72rem; color:rgba(255,255,255,.32); letter-spacing:.04em; }
+        footer a { color:rgba(200,168,75,.7); text-decoration:none; }
+        footer a:hover { color:var(--gold-light); }
+
+        /* Responsive */
+        @media(max-width:600px){
+            .hero-band { padding:36px 16px 30px; }
+            main { padding:28px 16px 48px; }
+            .clause-card { padding:1rem 1rem 1rem .9rem; gap:.75rem; }
+            .clause-num { min-width:32px; height:32px; font-size:.78rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header>
+    <div class="header-gold-line"></div>
+    <div class="header-inner">
+        <div class="logo-area">
+            <div class="logo-mark">
+                <img src="Logo.png" alt="Aushadhiyog Logo"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;">
+                    <svg style="width:18px;height:18px;stroke:#fff;fill:none;" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="logo-text">
+                <h1>Aushadhiyog</h1>
+                <p id="headerSubtitle">नियम एवं शर्तें</p>
+            </div>
+        </div>
+        <div class="lang-toggle">
+            <button class="lang-btn active" id="btnHi" onclick="setLang('hi')">हिंदी</button>
+            <button class="lang-btn" id="btnEn" onclick="setLang('en')">EN</button>
+        </div>
+    </div>
+</header>
+
+<!-- ══ HERO BAND ══ -->
+<div class="hero-band">
+    <div class="hero-band-inner">
+        <div class="hero-badge">
+            <svg style="width:12px;height:12px;fill:var(--gold-light);" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+            <span id="badgeText">Official Document</span>
+        </div>
+        <h2 class="hero-title" id="heroTitle">नियम एवं शर्तें</h2>
+        <p class="hero-subtitle" id="heroSub">Terms &amp; Conditions</p>
+        <div class="hero-divider"></div>
+    </div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<main>
+
+    <!-- Company tag -->
+    <div class="company-tag">
+        <svg style="width:14px;height:14px;stroke:var(--brand);fill:none;" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+        </svg>
+        <span>Aushadhiyog Pvt. Ltd.</span>
+    </div>
+
+    <!-- Intro card -->
+    <div class="intro-card">
+        <p id="introText">इस दस्तावेज़ में Aushadhiyog Pvt. Ltd. और पंजीकृत किसानों के बीच के नियम एवं शर्तें निर्धारित की गई हैं। कृपया पंजीकरण से पहले इन्हें ध्यानपूर्वक पढ़ें।</p>
+    </div>
+
+    <!-- Clauses -->
+    <div class="clauses-wrapper">
+
+        <!-- Clause 1 -->
+        <div class="clause-card">
+            <div class="clause-num">1</div>
+            <div class="clause-body">
+                <div class="clause-title lang-hi">पंजीकरण</div>
+                <div class="clause-title lang-en" style="display:none;">Registration</div>
+                <p class="clause-text lang-hi">किसान द्वारा दी गई जानकारी सही होनी चाहिए; गलत पाए जाने पर पंजीकरण रद्द किया जा सकता है।</p>
+                <p class="clause-text-en lang-en" style="display:none;">All information provided by the farmer must be accurate; registration may be cancelled if found to be incorrect.</p>
+            </div>
+        </div>
+
+        <!-- Clause 2 -->
+        <div class="clause-card">
+            <div class="clause-num">2</div>
+            <div class="clause-body">
+                <div class="clause-title lang-hi">खेती</div>
+                <div class="clause-title lang-en" style="display:none;">Farming</div>
+                <p class="clause-text lang-hi">किसान कंपनी के तकनीकी मार्गदर्शन का पालन करने का प्रयास करेगा; अंतिम निर्णय किसान का होगा।</p>
+                <p class="clause-text-en lang-en" style="display:none;">The farmer will endeavour to follow the company's technical guidance; however, the final decision remains with the farmer.</p>
+            </div>
+        </div>
+
+        <!-- Clause 3 -->
+        <div class="clause-card">
+            <div class="clause-num">3</div>
+            <div class="clause-body">
+                <div class="clause-title lang-hi">गुणवत्ता</div>
+                <div class="clause-title lang-en" style="display:none;">Quality</div>
+                <p class="clause-text lang-hi">उत्पाद निर्धारित गुणवत्ता मानकों के अनुसार होना चाहिए; अन्यथा कंपनी खरीद से इंकार कर सकती है।</p>
+                <p class="clause-text-en lang-en" style="display:none;">Produce must conform to specified quality standards; otherwise the company reserves the right to decline purchase.</p>
+            </div>
+        </div>
+
+        <!-- Clause 4 -->
+        <div class="clause-card">
+            <div class="clause-num">4</div>
+            <div class="clause-body">
+                <div class="clause-title lang-hi">खरीद एवं मूल्य</div>
+                <div class="clause-title lang-en" style="display:none;">Purchase &amp; Price</div>
+                <p class="clause-text lang-hi">खरीद और मूल्य पारस्परिक सहमति व बाजार स्थिति के अनुसार तय होंगे।</p>
+                <p class="clause-text-en lang-en" style="display:none;">Purchase and pricing will be determined by mutual agreement and prevailing market conditions.</p>
+            </div>
+        </div>
+
+        <!-- Clause 5 -->
+        <div class="clause-card">
+            <div class="clause-num">5</div>
+            <div class="clause-body">
+                <div class="clause-title lang-hi">भुगतान</div>
+                <div class="clause-title lang-en" style="display:none;">Payment</div>
+                <p class="clause-text lang-hi">स्वीकृत उत्पाद का भुगतान निर्धारित समय में बैंक ट्रांसफर से किया जाएगा।</p>
+                <p class="clause-text-en lang-en" style="display:none;">Payment for accepted produce will be made within the stipulated time via bank transfer.</p>
+            </div>
+        </div>
+
+        <!-- Clause 6 -->
+        <div class="clause-card">
+            <div class="clause-num">6</div>
+            <div class="clause-body">
+                <div class="clause-title lang-hi">डेटा उपयोग</div>
+                <div class="clause-title lang-en" style="display:none;">Data Usage</div>
+                <p class="clause-text lang-hi">किसान की जानकारी केवल व्यवसायिक उद्देश्यों के लिए उपयोग होगी; बिना अनुमति अनधिकृत साझा नहीं किया जाएगा।</p>
+                <p class="clause-text-en lang-en" style="display:none;">The farmer's information will be used solely for business purposes; it will not be shared without authorisation.</p>
+            </div>
+        </div>
+
+        <!-- Clause 7 -->
+        <div class="clause-card">
+            <div class="clause-num">7</div>
+            <div class="clause-body">
+                <div class="clause-title lang-hi">जोखिम</div>
+                <div class="clause-title lang-en" style="display:none;">Risk</div>
+                <p class="clause-text lang-hi">खेती से जुड़े प्राकृतिक जोखिम (मौसम, कीट आदि) किसान के होंगे।</p>
+                <p class="clause-text-en lang-en" style="display:none;">Natural risks associated with farming (weather, pests, etc.) shall be borne by the farmer.</p>
+            </div>
+        </div>
+
+        <!-- Clause 8 -->
+        <div class="clause-card">
+            <div class="clause-num">8</div>
+            <div class="clause-body">
+                <div class="clause-title lang-hi">समाप्ति</div>
+                <div class="clause-title lang-en" style="display:none;">Termination</div>
+                <p class="clause-text lang-hi">कोई भी पक्ष पूर्व सूचना देकर समझौता समाप्त कर सकता है।</p>
+                <p class="clause-text-en lang-en" style="display:none;">Either party may terminate the agreement by providing prior notice.</p>
+            </div>
+        </div>
+
+        <!-- Clause 9 -->
+        <div class="clause-card">
+            <div class="clause-num">9</div>
+            <div class="clause-body">
+                <div class="clause-title lang-hi">विवाद</div>
+                <div class="clause-title lang-en" style="display:none;">Dispute</div>
+                <p class="clause-text lang-hi">विवाद का समाधान आपसी सहमति से, अन्यथा स्थानीय न्यायालय में होगा।</p>
+                <p class="clause-text-en lang-en" style="display:none;">Disputes shall be resolved by mutual agreement, failing which the matter will be referred to the local court.</p>
+            </div>
+        </div>
+
+    </div><!-- /clauses-wrapper -->
+
+    <!-- Declaration box -->
+    <div class="declaration-box">
+        <h4 id="declTitle">
+            <svg style="width:14px;height:14px;stroke:#92400E;fill:none;" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="lang-hi">घोषणा</span>
+            <span class="lang-en" style="display:none;">Declaration</span>
+        </h4>
+        <p class="lang-hi">पंजीकरण करके किसान यह घोषित करते हैं कि उन्होंने उपरोक्त सभी नियम एवं शर्तें ध्यानपूर्वक पढ़ ली हैं और वे इनसे सहमत हैं।</p>
+        <p class="lang-en" style="display:none;">By registering, the farmer declares that they have carefully read all the above terms and conditions and agree to them.</p>
+    </div>
+
+    <!-- Back button -->
+    <div style="display:flex; justify-content:center; padding-top:8px;">
+        <a href="https://aditya-baraik.github.io/aushadi-portal/" class="back-btn">
+            <svg style="width:16px;height:16px;stroke:#fff;fill:none;" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            <span id="backBtnText">वापस जाएं</span>
+        </a>
+    </div>
+
+</main>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+    <div class="footer-gold"></div>
+    <p>
+        झारखंड की मिट्टी से आपकी दवाई तक। &nbsp;&copy;&nbsp;2025
+        <a href="terms.html/">Aushadhiyog Platform Pvt. Ltd.</a>
+    </p>
+</footer>
+
+<script>
+    let currentLang = 'hi';
+
+    const strings = {
+        hi: {
+            subtitle: 'नियम एवं शर्तें',
+            badge: 'आधिकारिक दस्तावेज़',
+            heroTitle: 'नियम एवं शर्तें',
+            heroSub: 'Terms & Conditions',
+            intro: 'इस दस्तावेज़ में Aushadhiyog Pvt. Ltd. और पंजीकृत किसानों के बीच के नियम एवं शर्तें निर्धारित की गई हैं। कृपया पंजीकरण से पहले इन्हें ध्यानपूर्वक पढ़ें।',
+            backBtn: 'वापस जाएं',
+        },
+        en: {
+            subtitle: 'Terms & Conditions',
+            badge: 'Official Document',
+            heroTitle: 'Terms & Conditions',
+            heroSub: 'Aushadhiyog Pvt. Ltd.',
+            intro: 'This document sets out the Terms & Conditions between Aushadhiyog Pvt. Ltd. and registered farmers. Please read carefully before registering.',
+            backBtn: 'Go Back',
+        }
+    };
+
+    function setLang(lang) {
+        currentLang = lang;
+        document.getElementById('htmlRoot').lang = lang;
+
+        // Toggle button styles
+        document.getElementById('btnHi').classList.toggle('active', lang === 'hi');
+        document.getElementById('btnEn').classList.toggle('active', lang === 'en');
+
+        // Update text strings
+        const s = strings[lang];
+        document.getElementById('headerSubtitle').textContent = s.subtitle;
+        document.getElementById('badgeText').textContent      = s.badge;
+        document.getElementById('heroTitle').textContent      = s.heroTitle;
+        document.getElementById('heroSub').innerHTML          = s.heroSub;
+        document.getElementById('introText').textContent      = s.intro;
+        document.getElementById('backBtnText').textContent    = s.backBtn;
+
+        // Toggle .lang-hi / .lang-en elements
+        document.querySelectorAll('.lang-hi').forEach(el => el.style.display = lang === 'hi' ? '' : 'none');
+        document.querySelectorAll('.lang-en').forEach(el => el.style.display = lang === 'en' ? '' : 'none');
+    }
+</script>
+</body>
+</html>
