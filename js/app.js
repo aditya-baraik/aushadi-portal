@@ -669,7 +669,7 @@ async function generatePDF(data) {
         doc.setTextColor(...WHITE);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(8);
-        doc.text(title, ML + 5, yPos + 5.8);
+        doc.text(title, ML + 5, yPos + 4.7);
         doc.setTextColor(...DARK_TEXT);
         return yPos + 7;
     }
@@ -681,19 +681,19 @@ async function generatePDF(data) {
         doc.setLineWidth(0.25);
         doc.rect(x, yPos, cellW, rowH);
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9);
+        doc.setFontSize(8);
         doc.setTextColor(...GREY_TEXT);
-        doc.text(label, x + 2, yPos + 5.8);
+        doc.text(label, x + 2, yPos + 4.7);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(...DARK_TEXT);
         const maxW = cellW - labelW - 3;
         const txt = doc.splitTextToSize(String(value || '—'), maxW);
-        doc.text(txt[0] || '', x + labelW + 2, yPos + 5.8);
+        doc.text(txt[0] || '', x + labelW + 2, yPos + 4.7);
     }
 
     // ── PLAIN INFO ROW ──
     function infoLine(label, value, x, yPos, labelW) {
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(...GREY_TEXT);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(...GREY_TEXT);
         doc.text(label, x, yPos);
         doc.setFont('helvetica', 'normal'); doc.setTextColor(...DARK_TEXT);
         doc.text(String(value || '—'), x + labelW, yPos);
@@ -714,15 +714,15 @@ async function generatePDF(data) {
     if (data.photo) {
         try {
             doc.setDrawColor(...DARK_GREEN);
-            doc.setLineWidth(0.8);
-            doc.roundedRect(photoX - 1, photoY - 1, photoW + 2, photoH + 2, 1, 1);
+            doc.setLineWidth(0.3);
+            doc.rect(photoX - 1, photoY - 1, photoW + 2, photoH + 2);
             doc.addImage(data.photo, 'JPEG', photoX, photoY, photoW, photoH, undefined, 'FAST');
         } catch (e) { console.error('Photo:', e); }
     } else {
         doc.setFillColor(...CREAM);
         doc.setDrawColor(...DARK_GREEN);
-        doc.setLineWidth(0.6);
-        doc.roundedRect(photoX, photoY, photoW, photoH, 1, 1, 'FD');
+        doc.setLineWidth(0.3);
+        doc.rect(photoX, photoY, photoW, photoH, 'FD');
         doc.setFontSize(6.5); doc.setTextColor(...GREY_TEXT);
         doc.text('PHOTO', photoX + photoW / 2, photoY + photoH / 2, { align: 'center' });
     }
@@ -730,26 +730,26 @@ async function generatePDF(data) {
     doc.setFontSize(6); doc.setTextColor(...GREY_TEXT);
     doc.text('Passport Size Photo', photoX + photoW / 2, photoY + photoH + 4, { align: 'center' });
 
-    const rowH = 9;
+    const rowH = 7.5;
     // Name
     doc.setFillColor(...ROW_ALT); doc.rect(ML, y, s1CW, rowH, 'F');
     doc.setDrawColor(...BORDER_GREY); doc.setLineWidth(0.25); doc.rect(ML, y, s1CW, rowH);
-    infoLine('Poora Naam:', data.fullName, ML + 2, y + 6, 28); y += rowH;
+    infoLine('Poora Naam:', data.fullName, ML + 2, y + 5, 28); y += rowH;
 
     // Father
     doc.rect(ML, y, s1CW, rowH);
-    infoLine('Pita/Pati ka Naam:', data.fatherName, ML + 2, y + 6, 38); y += rowH;
+    infoLine('Pita/Pati ka Naam:', data.fatherName, ML + 2, y + 5, 38); y += rowH;
 
     // DOB + Age
     doc.setFillColor(...ROW_ALT); doc.rect(ML, y, s1CW, rowH, 'F');
     doc.rect(ML, y, s1CW, rowH);
-    infoLine('Janm Tithi:', data.dob, ML + 2, y + 6, 24);
-    infoLine('Aayu:', (data.age || '—') + ' varsh', ML + 2 + 68, y + 6, 14); y += rowH;
+    infoLine('Janm Tithi:', data.dob, ML + 2, y + 5, 24);
+    infoLine('Aayu:', (data.age || '—') + ' varsh', ML + 2 + 68, y + 5, 14); y += rowH;
 
-    // Gender + Mobile (Mobile positioned directly below Aayu)
+    // Gender + Mobile
     doc.rect(ML, y, s1CW, rowH);
-    infoLine('Ling:', data.gender, ML + 2, y + 6, 14);
-    infoLine('Mobile:', data.phone, ML + 2 + 68, y + 6, 17); y += rowH;
+    infoLine('Ling:', data.gender, ML + 2, y + 5, 14);
+    infoLine('Mobile:', data.phone, ML + 2 + 50, y + 5, 17); y += rowH;
 
     y = Math.max(y, photoY + photoH + 6) + 2;
 
@@ -778,10 +778,10 @@ async function generatePDF(data) {
     doc.setFillColor(...MID_GREEN);
     doc.rect(ML, y, CW, 6.5, 'F');
     doc.setTextColor(...WHITE);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
-    doc.text('Bhoomi Prakar', ML + 2, y + 5.4);
-    doc.text('Kshetra (Acre)', ML + t + 2, y + 5.4);
-    doc.text('Swamitva', ML + t * 2 + 2, y + 5.4);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+    doc.text('Bhoomi Prakar', ML + 2, y + 4.3);
+    doc.text('Kshetra (Acre)', ML + t + 2, y + 4.3);
+    doc.text('Swamitva', ML + t * 2 + 2, y + 4.3);
     doc.setDrawColor(...DARK_GREEN); doc.setLineWidth(0.3);
     doc.rect(ML, y, CW, 6.5); y += 6.5;
 
@@ -792,8 +792,8 @@ async function generatePDF(data) {
     ].forEach((r, i) => {
         if (i % 2 === 0) { doc.setFillColor(...ROW_ALT); doc.rect(ML, y, CW, rowH, 'F'); }
         doc.setDrawColor(...BORDER_GREY); doc.setLineWidth(0.25); doc.rect(ML, y, CW, rowH);
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
-        doc.text(r[0], ML + 2, y + 5.8); doc.text(r[1], ML + t + 2, y + 5.8); doc.text(r[2], ML + t * 2 + 2, y + 5.8);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+        doc.text(r[0], ML + 2, y + 4.7); doc.text(r[1], ML + t + 2, y + 4.7); doc.text(r[2], ML + t * 2 + 2, y + 4.7);
         y += rowH;
     }); y += 2;
 
@@ -803,11 +803,11 @@ async function generatePDF(data) {
     y = secHeader('4. Samuh / Sangathan Judav (SHG/FPO)', y);
     doc.setFillColor(...ROW_ALT); doc.rect(ML, y, CW, rowH, 'F');
     doc.setDrawColor(...BORDER_GREY); doc.setLineWidth(0.25); doc.rect(ML, y, CW, rowH);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(...GREY_TEXT);
-    doc.text('SHG/FPO Sadasya:', ML + 2, y + 5.8);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(...GREY_TEXT);
+    doc.text('SHG/FPO Sadasya:', ML + 2, y + 4.7);
     doc.setFont('helvetica', 'normal'); doc.setTextColor(...DARK_TEXT);
     const shgVal = data.shgMember + (data.shgMember === 'हाँ' && data.shgName ? ' — ' + data.shgName : '');
-    doc.text(shgVal, ML + 38, y + 5.8);
+    doc.text(shgVal, ML + 38, y + 4.7);
     y += rowH + 2;
 
     // ════════════════════════════════
@@ -820,10 +820,10 @@ async function generatePDF(data) {
     doc.setFillColor(...MID_GREEN);
     doc.rect(ML, y, CW, 6.5, 'F');
     doc.setTextColor(...WHITE);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
-    doc.text('Fasal ka Naam', c1 + 2, y + 5.4);
-    doc.text('Buwai Maah', c2 + 2, y + 5.4);
-    doc.text('Katai Maah', c3 + 2, y + 5.4);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+    doc.text('Fasal ka Naam', c1 + 2, y + 4.3);
+    doc.text('Buwai Maah', c2 + 2, y + 4.3);
+    doc.text('Katai Maah', c3 + 2, y + 4.3);
     doc.setDrawColor(...DARK_GREEN); doc.setLineWidth(0.3); doc.rect(ML, y, CW, 6.5); y += 6.5;
 
     doc.setTextColor(...DARK_TEXT);
@@ -831,10 +831,10 @@ async function generatePDF(data) {
     crops.forEach((crop, i) => {
         if (i % 2 === 0) { doc.setFillColor(...ROW_ALT); doc.rect(ML, y, CW, rowH, 'F'); }
         doc.setDrawColor(...BORDER_GREY); doc.setLineWidth(0.25); doc.rect(ML, y, CW, rowH);
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
-        doc.text((i + 1) + '. ' + (crop.name || ''), c1 + 2, y + 5.8);
-        doc.text(crop.sowingMonth || '', c2 + 2, y + 5.8);
-        doc.text(crop.harvestMonth || '', c3 + 2, y + 5.8);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+        doc.text((i + 1) + '. ' + (crop.name || ''), c1 + 2, y + 4.7);
+        doc.text(crop.sowingMonth || '', c2 + 2, y + 4.7);
+        doc.text(crop.harvestMonth || '', c3 + 2, y + 4.7);
         y += rowH;
     }); y += 2;
 
@@ -844,10 +844,10 @@ async function generatePDF(data) {
     y = secHeader('6. Poorv Anubhav (Previous Experience)', y);
     doc.setFillColor(...ROW_ALT); doc.rect(ML, y, CW, rowH, 'F');
     doc.setDrawColor(...BORDER_GREY); doc.setLineWidth(0.25); doc.rect(ML, y, CW, rowH);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(...GREY_TEXT);
-    doc.text('Kya aapne pehle Aushadhiya Fasal ugaai hai?', ML + 2, y + 5.8);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(...GREY_TEXT);
+    doc.text('Kya aapne pehle Aushadhiya Fasal ugaai hai?', ML + 2, y + 4.7);
     doc.setFont('helvetica', 'normal'); doc.setTextColor(...DARK_TEXT);
-    doc.text(data.previousMedicinal || '—', ML + 83, y + 5.8);
+    doc.text(data.previousMedicinal || '—', ML + 83, y + 4.7);
     y += rowH;
     if (data.previousMedicinal === 'हाँ' && data.prevExpDescription) {
         const lines = doc.splitTextToSize(data.prevExpDescription, CW - 6);
@@ -875,7 +875,7 @@ async function generatePDF(data) {
     // Left accent
     doc.setFillColor(...MID_GREEN);
     doc.rect(ML, y, 2, tH, 'F');
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...GREY_TEXT);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...GREY_TEXT);
     doc.text(tLines, ML + 5, y + 5);
     y += tH + 3;
 
@@ -885,7 +885,7 @@ async function generatePDF(data) {
     y = secHeader('8. Hastaakshar (Signatures)', y);
     y += 4;
     const sigW = (CW - 8) / 2;
-    const sigH = 23; // 40% smaller than 38
+    const sigH = 38; // increased height to fill page
 
     doc.setFillColor(...LIGHT_GREEN);
     doc.setDrawColor(...MID_GREEN);
@@ -894,11 +894,11 @@ async function generatePDF(data) {
     doc.roundedRect(ML + sigW + 8, y, sigW, sigH, 1.5, 1.5, 'FD');
 
     doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...GREY_TEXT);
-    doc.text('Naam: ' + data.fullName, ML + 3, y + sigH - 5);
+    doc.text('Naam: ' + data.fullName, ML + 3, y + sigH - 8);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
     doc.setDrawColor(...ACCENT_GOLD); doc.setLineWidth(0.5);
-    doc.line(ML + sigW * 0.15, y + sigH - 8, ML + sigW * 0.85, y + sigH - 8);
-    doc.line(ML + sigW + 8 + sigW * 0.15, y + sigH - 8, ML + sigW + 8 + sigW * 0.85, y + sigH - 8);
+    doc.line(ML + sigW * 0.15, y + sigH - 11, ML + sigW * 0.85, y + sigH - 11);
+    doc.line(ML + sigW + 8 + sigW * 0.15, y + sigH - 11, ML + sigW + 8 + sigW * 0.85, y + sigH - 11);
 
     doc.setTextColor(...GREY_TEXT);
     doc.text('Kisan Hastaakshar / Angutha Nishan', ML + sigW / 2, y + sigH + 5, { align: 'center' });
