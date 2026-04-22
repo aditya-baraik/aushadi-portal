@@ -669,9 +669,9 @@ async function generatePDF(data) {
     // ════════════════════════════════
     // PHOTO — positioned top-right beside section 1
     // ════════════════════════════════
-    const photoW = 26, photoH = 32;
+    const photoW = 28, photoH = 35;
     const photoX = W - MR - photoW;
-    const photoY = y;
+    const photoY = y + 1;
 
     if (data.photo) {
         try {
@@ -739,7 +739,7 @@ async function generatePDF(data) {
     // ════════════════════════════════
     // SECTION 1 — Personal Information
     // ════════════════════════════════
-    const photoRightX = photoX - 4; // content stops before photo
+    const photoRightX = photoX - 5; // content stops before photo
     const s1CW = photoRightX - ML;  // narrower content width (left of photo)
 
     y = secHeader('1. Vyaktigat Jaankaari (Personal Information)', y);
@@ -766,7 +766,7 @@ async function generatePDF(data) {
     infoLine('Ling:', data.gender, ML + 2, y + 4, 14);
     infoLine('Mobile:', data.phone, ML + 2 + 50, y + 4, 17); y += rowH;
 
-    y = Math.max(y, photoY + photoH + 6) + 2;
+    y = Math.max(y, photoY + photoH + 5) + 2;
 
     // ════════════════════════════════
     // SECTION 2 — Address
@@ -924,15 +924,16 @@ async function generatePDF(data) {
     y += 30;
 
     // ════════════════════════════════
-    // FOOTER BAND
+    // FOOTER BAND — always pinned to bottom of A4
     // ════════════════════════════════
+    const footerY = H - 10;
     doc.setFillColor(...DARK_GREEN);
-    doc.rect(0, y, W, 10, 'F');
+    doc.rect(0, footerY, W, 10, 'F');
     doc.setFillColor(...ACCENT_GOLD);
-    doc.rect(0, y + 9.2, W, 0.8, 'F');
+    doc.rect(0, footerY + 9.2, W, 0.8, 'F');
     doc.setTextColor(...WHITE);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
-    doc.text('Submitted: ' + data.submittedAt + '   |   Reg No: ' + data.regNumber, W / 2, y + 6.2, { align: 'center' });
+    doc.text('Submitted: ' + data.submittedAt + '   |   Reg No: ' + data.regNumber, W / 2, footerY + 6.2, { align: 'center' });
 
     return doc.output('blob');
 }
