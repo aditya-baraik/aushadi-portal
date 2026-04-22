@@ -12,6 +12,8 @@ const CONFIG = {
 let currentStep = 1;
 const totalSteps = 4;
 let photoDataUrl = null;
+// Track which steps the user has visited and left (so red dots only show after interaction)
+const stepTouched = { 1: false, 2: false, 3: false, 4: false };
 
 // ==========================================
 // INITIALIZATION
@@ -22,7 +24,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initializePhotoUpload();
     initializeDOBAutoAge();
     initializePrevExpToggle();
-    // Attach real-time dot update on all inputs
+    initializeTitleCase();
+    // Attach real-time dot update on all inputs (only for touched steps)
     document.getElementById('registrationForm').addEventListener('change', function() {
         checkAllStepsDots();
     });
@@ -98,11 +101,43 @@ function initializePrevExpToggle() {
 }
 
 // ==========================================
+// TITLE CASE — auto-capitalize text inputs
+// ==========================================
+function toTitleCase(str) {
+    return str.replace(/\S+/g, function(word) {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+    });
+}
+
+function initializeTitleCase() {
+    // Apply to all text inputs and textareas (skip readonly, date, number, tel, checkbox, etc.)
+    const textSelectors = 'input[type="text"], textarea';
+    document.querySelectorAll(textSelectors).forEach(function(el) {
+        el.addEventListener('blur', function() {
+            if (this.value.trim()) {
+                this.value = toTitleCase(this.value);
+            }
+        });
+    });
+
+    // Also apply to dynamically added crop inputs (via event delegation)
+    document.getElementById('registrationForm').addEventListener('blur', function(e) {
+        const el = e.target;
+        if ((el.tagName === 'INPUT' && el.type === 'text') || el.tagName === 'TEXTAREA') {
+            if (el.value.trim()) {
+                el.value = toTitleCase(el.value);
+            }
+        }
+    }, true);
+}
+
+// ==========================================
 // FORM STEP NAVIGATION
 // ==========================================
 function initializeForm() {
-    // NEXT: always proceeds, just checks dots
+    // NEXT: mark current step as touched, then advance
     document.getElementById('nextBtn').addEventListener('click', () => {
+        stepTouched[currentStep] = true;
         checkStepCompleteness(currentStep);
         if (currentStep < totalSteps) {
             currentStep++;
@@ -110,8 +145,9 @@ function initializeForm() {
         }
     });
 
-    // PREV: always goes back
+    // PREV: mark current step as touched, then go back
     document.getElementById('prevBtn').addEventListener('click', () => {
+        stepTouched[currentStep] = true;
         checkStepCompleteness(currentStep);
         if (currentStep > 1) {
             currentStep--;
@@ -157,11 +193,18 @@ function updateFormDisplay() {
 
 // ==========================================
 // STEP COMPLETENESS CHECK → RED DOT
+// Only shows red dot if that step has been touched/visited
 // ==========================================
 function checkStepCompleteness(stepNum) {
     const stepEl = document.querySelector(`.form-step[data-step="${stepNum}"]`);
     const wrapper = document.getElementById(`sw-${stepNum}`);
     if (!stepEl || !wrapper) return;
+
+    // Don't show red dot until user has interacted with this step
+    if (!stepTouched[stepNum]) {
+        wrapper.querySelector('.step-dot').style.display = 'none';
+        return;
+    }
 
     const inputs = stepEl.querySelectorAll('input[required], select[required], textarea[required]');
     let hasEmpty = false;
@@ -175,6 +218,8 @@ function checkStepCompleteness(stepNum) {
 }
 
 function checkAllStepsDots() {
+    // Mark current step as touched when user types/changes anything
+    stepTouched[currentStep] = true;
     for (let i = 1; i <= totalSteps; i++) checkStepCompleteness(i);
 }
 
@@ -183,6 +228,9 @@ function checkAllStepsDots() {
 // ==========================================
 function validateAllSteps() {
     let allValid = true;
+    // Mark all steps as touched on submit attempt
+    for (let i = 1; i <= totalSteps; i++) stepTouched[i] = true;
+
     for (let stepNum = 1; stepNum <= totalSteps; stepNum++) {
         const stepEl = document.querySelector(`.form-step[data-step="${stepNum}"]`);
         if (!stepEl) continue;
@@ -497,9 +545,9 @@ async function generatePDF(data) {
     }
     y += 3;
 
-    // SECTION 7: T&C
+    // SECTION 7: T&C — FIX: "Evam" (capital E)
     checkPage(30);
-    y = sectionTitle('7. Niyam evam Shartein (Terms & Conditions)', y);
+    y = sectionTitle('7. Niyam Evam Shartein (Terms & Conditions)', y);
     doc.setFontSize(7.5); doc.setFont('helvetica', 'normal');
     const termsText = 'Main yah ghoshit karta/karti hun ki di gayi sabhi jaankaari satya hai. Main company ke nirdeshanusar kheti karunga/karungi aur gunvatta maankon ka paalan karunga/karungi. Main utpada ko praathamikta se company ko bechunga/bechungi. Yadi koi jaankaari galat payi jaati hai, to panjikaran nirasht kiya ja sakta hai.';
     const termsLines = doc.splitTextToSize(termsText, W - margin * 2 - 4);
@@ -507,7 +555,7 @@ async function generatePDF(data) {
     y += termsLines.length * 4 + 6;
 
     // SECTION 8: Signatures
-    checkPage(30);
+    checkPage(50);
     y = sectionTitle('8. Hastaakshar (Signatures)', y);
     y += 8;
     const sigW = (W - margin * 2 - 10) / 2;
@@ -520,8 +568,7 @@ async function generatePDF(data) {
     doc.text('Company Pratinidhi', margin + sigW + 10 + sigW / 2, y + 25, { align: 'center' });
     y += 30;
 
-    // Footer
-    checkPage(12);
+    // Footer — placed right after signatures, no extra page added
     doc.setFillColor(BRAND_R, BRAND_G, BRAND_B);
     doc.rect(0, y, W, 10, 'F');
     doc.setTextColor(255, 255, 255);
