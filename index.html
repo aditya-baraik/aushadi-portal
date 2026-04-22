@@ -378,12 +378,12 @@
 
         /* ─── LOGO MARK ─── */
         .logo-mark {
-            width:52px; height:52px; border-radius:50%;
+            width:68px; height:68px; border-radius:50%;
             background:rgba(255,255,255,.14);
             display:flex; align-items:center; justify-content:center;
             flex-shrink:0; overflow:hidden;
-            border:2px solid rgba(255,255,255,.35);
-            box-shadow: 0 2px 10px rgba(0,0,0,.2);
+            border:2.5px solid rgba(255,255,255,.45);
+            box-shadow: 0 3px 14px rgba(0,0,0,.28);
         }
         .logo-mark img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
 
@@ -497,7 +497,7 @@
 <!-- ══════════════════════ HEADER ══════════════════════ -->
 <header class="sticky top-0 z-50" style="background:linear-gradient(135deg, var(--brand) 0%, #0f2310 100%);border-bottom:1px solid rgba(255,255,255,.08);box-shadow:0 2px 16px rgba(0,0,0,.18);">
     <div class="gold-divider" style="height:1.5px;background:linear-gradient(90deg,transparent,rgba(200,168,75,.5),transparent);"></div>
-    <div class="container mx-auto px-4" style="display:flex;align-items:center;justify-content:space-between;height:64px;">
+    <div class="container mx-auto px-4" style="display:flex;align-items:center;justify-content:space-between;height:80px;">
         <div style="display:flex;align-items:center;gap:12px;">
             <div class="logo-mark">
                 <img src="Logo.png" alt="Aushadhiyog Logo"
@@ -509,8 +509,8 @@
                 </div>
             </div>
             <div>
-                <h1 style="font-family:var(--ff);font-size:1.3rem;font-weight:700;font-style:italic;color:#fff;line-height:1.1;letter-spacing:-.01em;" data-hi="औषधियोग" data-en="Aushadhiyog">औषधियोग</h1>
-                <p style="font-size:.65rem;color:rgba(200,168,75,.75);font-weight:600;letter-spacing:.1em;text-transform:uppercase;" data-hi="किसान पंजीकरण" data-en="Farmer Registration">किसान पंजीकरण</p>
+                <h1 style="font-family:var(--ff);font-size:1.65rem;font-weight:700;font-style:italic;color:#fff;line-height:1.1;letter-spacing:-.01em;" data-hi="औषधियोग" data-en="Aushadhiyog">औषधियोग</h1>
+                <p style="font-size:.75rem;color:rgba(200,168,75,.85);font-weight:600;letter-spacing:.1em;text-transform:uppercase;" data-hi="किसान पंजीकरण" data-en="Farmer Registration">किसान पंजीकरण</p>
             </div>
         </div>
 
@@ -870,15 +870,6 @@
                 <span data-hi="फोटो और सत्यापन" data-en="Photo & Verification">फोटो और सत्यापन</span>
             </h2>
 
-            <!-- Review Summary -->
-            <div style="margin-bottom:1.75rem;border:1.5px solid var(--border);border-radius:1rem;overflow:hidden;box-shadow:var(--shadow-sm);">
-                <div style="background:linear-gradient(135deg,var(--brand-mid),var(--brand));padding:.75rem 1.1rem;display:flex;align-items:center;gap:.55rem;">
-                    <span style="font-size:1rem;">📋</span>
-                    <span style="font-weight:800;font-size:.82rem;letter-spacing:.05em;text-transform:uppercase;color:#fff;" data-hi="आपकी जानकारी की समीक्षा करें" data-en="Review Your Information">आपकी जानकारी की समीक्षा करें</span>
-                    <span style="margin-left:auto;font-size:.7rem;color:rgba(255,255,255,.65);font-weight:500;" data-hi="कृपया सुनिश्चित करें कि सब सही है" data-en="Please verify all details are correct">कृपया सुनिश्चित करें कि सब सही है</span>
-                </div>
-                <div id="reviewPanel" style="padding:.5rem;background:#fff;"></div>
-            </div>
             <div class="mb-8">
                 <h3 class="section-heading" data-hi="📷 पासपोर्ट साइज फोटो *" data-en="📷 Passport Size Photo *">📷 पासपोर्ट साइज फोटो *</h3>
                 <div class="info-banner-blue mb-4">
@@ -909,31 +900,27 @@
                 </a>
             </div>
 
-            <!-- Terms & Conditions -->
+            <!-- Terms & Conditions — language synced with header toggle -->
             <div class="terms-card">
                 <h3 style="font-size:.88rem;font-weight:800;color:var(--brand);margin-bottom:.9rem;letter-spacing:.04em;text-transform:uppercase;" data-hi="📋 नियम एवं शर्तें" data-en="📋 Terms & Conditions">📋 नियम एवं शर्तें</h3>
                 <div class="terms-scroll-box">
-                    <div class="terms-bilingual-block">
-                        <div class="terms-lang-block hi">
-                            <h5 style="color:#92400e;">हिंदी</h5>
-                            <ol style="padding-left:1.2rem;margin:0;list-style:decimal;font-size:.82rem;">
-                                <li style="margin-bottom:.35rem;">मैं पुष्टि करता/करती हूं कि इस पंजीकरण फॉर्म में दी गई सभी जानकारी सत्य एवं सही है।</li>
-                                <li style="margin-bottom:.35rem;">कंपनी के कृषि दिशा-निर्देशों और गुणवत्ता मानकों का पालन करना अनिवार्य है।</li>
-                                <li style="margin-bottom:.35rem;">उत्पादित औषधीय फसल को प्राथमिकता के आधार पर कंपनी को बेचा जाएगा।</li>
-                                <li style="margin-bottom:.35rem;">गलत जानकारी पाए जाने पर पंजीकरण निरस्त किया जा सकता है।</li>
-                                <li>व्यक्तिगत जानकारी केवल पंजीकरण उद्देश्यों के लिए उपयोग की जाएगी।</li>
-                            </ol>
-                        </div>
-                        <div class="terms-lang-block en">
-                            <h5 style="color:#1e40af;">English</h5>
-                            <ol style="padding-left:1.2rem;margin:0;list-style:decimal;font-size:.82rem;">
-                                <li style="margin-bottom:.35rem;">I confirm all information provided is true and accurate.</li>
-                                <li style="margin-bottom:.35rem;">Compliance with company farming guidelines &amp; quality standards is mandatory.</li>
-                                <li style="margin-bottom:.35rem;">Produced medicinal crops will be sold to the company on priority basis.</li>
-                                <li style="margin-bottom:.35rem;">If any information is incorrect, registration may be cancelled.</li>
-                                <li>Personal information will be used solely for registration purposes.</li>
-                            </ol>
-                        </div>
+                    <div id="step4TermsHi">
+                        <ol style="padding-left:1.2rem;margin:0;list-style:decimal;font-size:.84rem;line-height:1.8;">
+                            <li style="margin-bottom:.35rem;">मैं पुष्टि करता/करती हूं कि इस पंजीकरण फॉर्म में दी गई सभी जानकारी सत्य एवं सही है।</li>
+                            <li style="margin-bottom:.35rem;">कंपनी के कृषि दिशा-निर्देशों और गुणवत्ता मानकों का पालन करना अनिवार्य है।</li>
+                            <li style="margin-bottom:.35rem;">उत्पादित औषधीय फसल को प्राथमिकता के आधार पर कंपनी को बेचा जाएगा।</li>
+                            <li style="margin-bottom:.35rem;">गलत जानकारी पाए जाने पर पंजीकरण निरस्त किया जा सकता है।</li>
+                            <li>व्यक्तिगत जानकारी केवल पंजीकरण उद्देश्यों के लिए उपयोग की जाएगी।</li>
+                        </ol>
+                    </div>
+                    <div id="step4TermsEn" style="display:none;">
+                        <ol style="padding-left:1.2rem;margin:0;list-style:decimal;font-size:.84rem;line-height:1.8;">
+                            <li style="margin-bottom:.35rem;">I confirm all information provided is true and accurate.</li>
+                            <li style="margin-bottom:.35rem;">Compliance with company farming guidelines &amp; quality standards is mandatory.</li>
+                            <li style="margin-bottom:.35rem;">Produced medicinal crops will be sold to the company on priority basis.</li>
+                            <li style="margin-bottom:.35rem;">If any information is incorrect, registration may be cancelled.</li>
+                            <li>Personal information will be used solely for registration purposes.</li>
+                        </ol>
                     </div>
                 </div>
                 <label class="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-green-50 transition" style="margin-top:.25rem;">
@@ -944,13 +931,44 @@
         </div>
         <!-- END STEP 4 -->
 
+        <!-- ══ REVIEW TAB (shown after Submit click, before final confirm) ══ -->
+        <div class="form-step" id="reviewStep" data-step="5" style="display:none;">
+            <h2 class="step-title">
+                <span class="step-title-num" style="background:linear-gradient(145deg,#2B7A4F,#1B5E3A);">✓</span>
+                <span data-hi="जानकारी की समीक्षा करें" data-en="Review Your Information">जानकारी की समीक्षा करें</span>
+            </h2>
+            <div class="info-banner-blue mb-5">
+                <p style="color:#1e40af;font-size:.88rem;" data-hi="कृपया नीचे अपनी सभी जानकारी की जांच करें। यदि कोई गलती हो तो Edit पर क्लिक करें।" data-en="Please review all your information below. If anything is wrong, click Edit to go back and fix it.">कृपया नीचे अपनी सभी जानकारी की जांच करें। यदि कोई गलती हो तो Edit पर क्लिक करें।</p>
+            </div>
+            <!-- Review Panel -->
+            <div id="reviewPanel" style="margin-bottom:1.75rem;border:1.5px solid var(--border);border-radius:1rem;overflow:hidden;box-shadow:var(--shadow-sm);"></div>
+            <!-- Action Buttons Row -->
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding-top:1.2rem;border-top:1.5px solid var(--border);">
+                <button type="button" id="editFormBtn" onclick="exitReviewMode()"
+                    style="display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.6rem;background:#fff;color:var(--brand);border:1.5px solid var(--brand);border-radius:.55rem;font-weight:700;font-size:.875rem;cursor:pointer;transition:all .25s;letter-spacing:.03em;text-transform:uppercase;box-shadow:0 2px 8px rgba(0,0,0,.06);"
+                    onmouseover="this.style.background='var(--cream)'" onmouseout="this.style.background='#fff'"
+                    data-hi="✏️ Edit — जानकारी सुधारें" data-en="✏️ Edit Information">✏️ Edit — जानकारी सुधारें</button>
+                <div style="display:flex;align-items:center;gap:.5rem;">
+                    <button type="button" id="downloadPdfReviewBtn" onclick="downloadPDFPreview()"
+                        style="display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.4rem;background:var(--cream);color:var(--brand);border:1.5px solid var(--brand);border-radius:.55rem;font-weight:600;font-size:.82rem;cursor:pointer;transition:all .25s;letter-spacing:.03em;text-transform:uppercase;"
+                        onmouseover="this.style.background='var(--brand);this.style.color=\'#fff\'"
+                        data-hi="📄 PDF डाउनलोड" data-en="📄 Download PDF">📄 PDF डाउनलोड</button>
+                    <button type="button" id="confirmRegBtn" onclick="confirmAndSubmit()"
+                        style="display:inline-flex;align-items:center;gap:.5rem;padding:.88rem 2.2rem;background:linear-gradient(135deg,var(--brand) 0%,#0f2310 100%);color:#fff;border:none;border-radius:.55rem;font-weight:700;font-size:.95rem;cursor:pointer;transition:all .28s;letter-spacing:.04em;text-transform:uppercase;box-shadow:0 4px 18px rgba(27,58,26,.4);"
+                        onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 26px rgba(27,58,26,.52)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 18px rgba(27,58,26,.4)'"
+                        data-hi="✅ पंजीकरण की पुष्टि करें" data-en="✅ Confirm Registration">✅ पंजीकरण की पुष्टि करें</button>
+                </div>
+            </div>
+        </div>
+        <!-- END REVIEW STEP -->
+
         <!-- ── Navigation ── -->
-        <div class="flex justify-between mt-9 gap-4 pt-6" style="border-top:1.5px solid var(--border);">
+        <div class="flex justify-between mt-9 gap-4 pt-6 no-print" style="border-top:1.5px solid var(--border);" id="navBar">
             <button type="button" id="prevBtn" class="btn-secondary" style="display:none;" data-hi="◄ पिछला" data-en="◄ Previous">◄ पिछला</button>
             <div class="flex gap-3 ml-auto flex-wrap justify-end">
                 <button type="button" id="downloadPdfBtn" onclick="downloadPDFPreview()" class="btn-download" style="display:none;" data-hi="📄 PDF डाउनलोड करें" data-en="📄 Download PDF">📄 PDF डाउनलोड करें</button>
                 <button type="button" id="nextBtn" class="btn-primary" data-hi="अगला ►" data-en="Next ►">अगला ►</button>
-                <button type="submit" id="submitBtn" class="btn-submit" style="display:none;" data-hi="🚀 पंजीकरण जमा करें" data-en="🚀 Submit Registration">🚀 पंजीकरण जमा करें</button>
+                <button type="button" id="submitBtn" class="btn-submit" style="display:none;" onclick="openReviewMode()" data-hi="🚀 जमा करें और समीक्षा करें" data-en="🚀 Submit & Review">🚀 जमा करें और समीक्षा करें</button>
             </div>
         </div>
 
@@ -1048,6 +1066,11 @@ function switchLang(lang) {
     applyLanguage(lang);
     document.getElementById('headerHindi').classList.toggle('active', lang === 'hi');
     document.getElementById('headerEnglish').classList.toggle('active', lang === 'en');
+    // Sync step4 T&C with header language
+    const hiDiv = document.getElementById('step4TermsHi');
+    const enDiv = document.getElementById('step4TermsEn');
+    if (hiDiv) hiDiv.style.display = lang === 'hi' ? 'block' : 'none';
+    if (enDiv) enDiv.style.display = lang === 'en' ? 'block' : 'none';
 }
 function applyLanguage(lang) {
     document.documentElement.lang = lang;
