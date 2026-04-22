@@ -280,6 +280,44 @@
             .clause-num { min-width:32px; height:32px; font-size:.78rem; }
         }
     </style>
+    <script>
+// 1. Right-click disable
+document.addEventListener('contextmenu', function(e) {
+  e.preventDefault();
+  return false;
+});
+
+// 2. F12, Ctrl+U, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C block
+document.addEventListener('keydown', function(e) {
+  // F12
+  if (e.key === 'F12') { e.preventDefault(); return false; }
+  
+  // Ctrl+U (View Source)
+  if (e.ctrlKey && e.key === 'u') { e.preventDefault(); return false; }
+  
+  // Ctrl+Shift+I (DevTools)
+  if (e.ctrlKey && e.shiftKey && e.key === 'I') { e.preventDefault(); return false; }
+  
+  // Ctrl+Shift+J (Console)
+  if (e.ctrlKey && e.shiftKey && e.key === 'J') { e.preventDefault(); return false; }
+  
+  // Ctrl+Shift+C (Inspector)
+  if (e.ctrlKey && e.shiftKey && e.key === 'C') { e.preventDefault(); return false; }
+  
+  // Ctrl+S (Save page)
+  if (e.ctrlKey && e.key === 's') { e.preventDefault(); return false; }
+});
+
+// 3. DevTools open detection (debugger loop)
+setInterval(function() {
+  const start = new Date();
+  debugger;
+  const end = new Date();
+  if (end - start > 100) {
+    document.body.innerHTML = '<h1 style="text-align:center; margin-top:20%; font-family:sans-serif;">Access Denied</h1>';
+  }
+}, 1000);
+</script>
 </head>
 <body>
 
