@@ -540,7 +540,7 @@ setInterval(function() {
 <!-- ══════════════════════ HEADER ══════════════════════ -->
 <header class="sticky top-0 z-50" style="background:linear-gradient(135deg, var(--brand) 0%, #0f2310 100%);border-bottom:1px solid rgba(255,255,255,.08);box-shadow:0 2px 16px rgba(0,0,0,.18);">
     <div class="gold-divider" style="height:1.5px;background:linear-gradient(90deg,transparent,rgba(200,168,75,.5),transparent);"></div>
-    <div class="container mx-auto px-4" style="display:flex;align-items:center;justify-content:space-between;height:80px;">
+    <div class="container mx-auto px-4" style="display:flex;align-items:center;justify-content:space-between;height:60px;">
         <div style="display:flex;align-items:center;gap:12px;">
             <div class="logo-mark">
                 <img src="Logo.png" alt="Aushadhiyog Logo"
@@ -636,6 +636,13 @@ setInterval(function() {
 
         <!-- ══ STEP 1: Personal Info ══ -->
         <div class="form-step active" data-step="1">
+
+            <!-- Farmer ID Strip -->
+            <div id="farmerIdStrip" style="background:#F0FCF0;border:1.5px solid var(--brand);border-radius:.5rem;padding:.55rem 1rem;margin-bottom:1.4rem;display:flex;align-items:center;gap:.5rem;">
+                <span style="font-family:var(--fb);font-size:.82rem;font-weight:700;color:var(--brand);white-space:nowrap;">Farmer's ID —</span>
+                <span id="farmerIdDisplay" style="font-family:var(--fb);font-size:.82rem;font-weight:800;color:var(--brand);letter-spacing:.04em;">Submission ke baad generate hogi</span>
+            </div>
+
             <h2 class="step-title">
                 <span class="step-title-num">1</span>
                 <span data-hi="व्यक्तिगत एवं संपर्क जानकारी" data-en="Personal & Contact Information">व्यक्तिगत एवं संपर्क जानकारी</span>
