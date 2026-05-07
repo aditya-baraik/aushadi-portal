@@ -6,7 +6,7 @@ const CONFIG = {
     telegramChatId: '-1003840610447',
     // ⬇️ APNA SUPABASE URL AUR KEY YAHAN DALO
     supabaseUrl: 'https://YOUR_PROJECT.supabase.co',
-    supabaseKey: 'YOUR_ANON_PUBLIC_KEY'
+    supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlzbm1yem9pY2RuYXdkdmN6b2RyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMzUwNjIsImV4cCI6MjA5MzcxMTA2Mn0.jeBoyc2jnfUCYzWFAz-gUo0rHNQby82y6VVY1gzZBzo'
 };
 
 // ==========================================
