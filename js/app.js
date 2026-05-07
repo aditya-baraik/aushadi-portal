@@ -3,8 +3,60 @@
 // ==========================================
 const CONFIG = {
     telegramBotToken: '8596686665:AAHV4SsdwMmXxrLCzOfUUpg4H48DFvTiQIg',
-    telegramChatId: '-1003840610447'
+    telegramChatId: '-1003840610447',
+    // ⬇️ APNA SUPABASE URL AUR KEY YAHAN DALO
+    supabaseUrl: 'https://YOUR_PROJECT.supabase.co',
+    supabaseKey: 'YOUR_ANON_PUBLIC_KEY'
 };
+
+// ==========================================
+// FARMER ID GENERATION — via Supabase
+// Format: AUS/**BLOCKNAME**/YEAR/NNNN
+// ==========================================
+async function generateFarmerId(blockName) {
+    const year = new Date().getFullYear();
+    const block = (blockName || 'UNKNOWN').trim().toUpperCase();
+
+    try {
+        // 1. Fetch current max counter for this year
+        const fetchRes = await fetch(
+            `${CONFIG.supabaseUrl}/rest/v1/farmer_registrations?year=eq.${year}&order=counter.desc&limit=1`,
+            {
+                headers: {
+                    'apikey': CONFIG.supabaseKey,
+                    'Authorization': `Bearer ${CONFIG.supabaseKey}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        const rows = await fetchRes.json();
+        const lastCounter = rows.length > 0 ? (rows[0].counter || 0) : 0;
+        const newCounter = lastCounter + 1;
+
+        // 2. Format: 0001, 0002, ...
+        const paddedCounter = String(newCounter).padStart(4, '0');
+        const farmerId = `AUS/${block}/${year}/${paddedCounter}`;
+
+        // 3. Save to Supabase
+        await fetch(`${CONFIG.supabaseUrl}/rest/v1/farmer_registrations`, {
+            method: 'POST',
+            headers: {
+                'apikey': CONFIG.supabaseKey,
+                'Authorization': `Bearer ${CONFIG.supabaseKey}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({ year, counter: newCounter, farmer_id: farmerId })
+        });
+
+        return farmerId;
+    } catch (err) {
+        console.error('Farmer ID generation error:', err);
+        // Fallback: timestamp-based ID if Supabase fails
+        const fallback = `AUS/${block}/${year}/${Date.now().toString().slice(-4)}`;
+        return fallback;
+    }
+}
 
 // ==========================================
 // AUTO-SAVE TO localStorage
@@ -373,6 +425,16 @@ async function confirmAndSubmit() {
     btn.innerHTML = '<span class="animate-spin inline-block mr-2">⏳</span> जमा हो रहा है...';
     try {
         const formData = collectFormData();
+
+        // Generate Farmer ID using block name from form
+        btn.innerHTML = '<span class="animate-spin inline-block mr-2">⏳</span> Farmer ID बना रहे हैं...';
+        const farmerId = await generateFarmerId(formData.block);
+        formData.farmerId = farmerId;
+
+        // Show Farmer ID on the strip (if user comes back to step 1)
+        const idDisplay = document.getElementById('farmerIdDisplay');
+        if (idDisplay) idDisplay.textContent = farmerId;
+
         const pdfBlob = await generatePDF(formData);
         await sendPDFToTelegram(pdfBlob, formData);
         showNotification('✅ पंजीकरण सफलतापूर्वक जमा हो गया!', 'success');
@@ -673,6 +735,26 @@ async function generatePDF(data) {
         doc.setTextColor(...DARK_TEXT);
         return yPos + 7;
     }
+
+    // ── FARMER ID STRIP — above Section 1 ──
+    doc.setFillColor(240, 252, 240);
+    doc.setDrawColor(...DARK_GREEN);
+    doc.setLineWidth(0.4);
+    doc.rect(ML, y, CW, 8, 'FD');
+    // left accent bar
+    doc.setFillColor(...ACCENT_GOLD);
+    doc.rect(ML, y, 2.5, 8, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...DARK_GREEN);
+    doc.text("Farmer's ID - ", ML + 6, y + 5.3);
+    // measure text width to position ID value right after label
+    const labelW = doc.getTextWidth("Farmer's ID - ");
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(27, 58, 26);
+    doc.text(data.farmerId || '—', ML + 6 + labelW, y + 5.3);
+    y += 8 + 2;
 
     // ── TWO-COLUMN ROW helper ──
     function dataRow(label, value, x, yPos, labelW, cellW, rowH = 6, isAlt = false) {
@@ -1075,6 +1157,7 @@ async function sendPDFToTelegram(pdfBlob, data) {
     formData.append('caption',
         `🌱 *Naya Kisan Panjikaran*\n` +
         `━━━━━━━━━━━━━━━━━━━━\n` +
+        `🪪 *Farmer's ID:* ${data.farmerId || '—'}\n` +
         `👤 *Naam:* ${data.fullName}\n` +
         `📱 *Mobile:* ${data.phone}\n` +
         `📍 *Sthan:* ${data.district}, ${data.state}\n` +
